@@ -1,0 +1,6 @@
+optimizer: Adam
+steps: 200
+lr: 0.01
+batch_size: 256
+lamb: 0.0
+device: cpu
