@@ -2,6 +2,10 @@
 
 This is the KAN lab. An experimentation space for my specialization project "Reconstructing the Cosmic Dawn: Interpretable Machine Learning with Kolmogorov-Arnold Networks" in the MSc in Engineering.
 
+## Setup
+
+This repository works with `uv`. To run the command in the section usage, clone the repo and run `uv sync`locally.
+
 ## Usage
 
 The following code show commands which can be used for this lab environment.
