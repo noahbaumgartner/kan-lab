@@ -1,12 +1,15 @@
+hydra:
+  run:
+    dir: .
+
+experiment_name: kan-lab
+mlflow_tracking_uri: sqlite:///mlflow.db
+
+trainer:
+  _target_: src.training.trainer.Trainer
+
 defaults:
   - model: pykan
   - dataset: sincos
   - training: default
   - _self_
-
-experiment_name: kan-lab
-mlflow_tracking_uri: mlruns
-
-hydra:
-  run:
-    dir: .

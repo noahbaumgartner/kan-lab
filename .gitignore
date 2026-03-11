@@ -6,6 +6,10 @@ __pycache__/
 .DS_Store
 mlruns/
 outputs/
-model/
+notebooks/model/
 figures/
+multirun/
+.hydra/
 *.db
+*.pt
+*.log

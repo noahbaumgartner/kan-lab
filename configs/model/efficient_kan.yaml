@@ -1,0 +1,4 @@
+_target_: src.models.efficient_kan_model.EfficientKANModel
+layers_hidden: [2, 5, 1]
+grid_size: 5
+spline_order: 3

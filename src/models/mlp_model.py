@@ -1,17 +1,17 @@
 from kan.MLP import MLP
-
 from .base import BaseKANModel
 
 
 class MLPModel(BaseKANModel):
-    def __init__(self, cfg):
-        self.cfg = cfg
+    def __init__(self, width, seed=1):
+        self.width = width
+        self.seed = seed
         self.model = None
 
     def build(self, device="cpu"):
         self.model = MLP(
-            width=list(self.cfg.width),
-            seed=self.cfg.get("seed", 1),
+            width=list(self.width),
+            seed=self.seed,
             device=device,
         )
 

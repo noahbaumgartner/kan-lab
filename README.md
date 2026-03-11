@@ -25,7 +25,7 @@ uv run python train.py model.grid=10 training.steps=200
 uv run python train.py --multirun model.grid=3,5,10,20
 
 # MLflow UI
-uv run mlflow ui
+uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
 
 # notebooks
 uv run jupyter notebook notebooks/

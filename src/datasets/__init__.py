@@ -1,1 +1,1 @@
-from .base import create_dataset
+from .sincos import SinCosDataset

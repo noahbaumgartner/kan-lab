@@ -1,21 +1,22 @@
 import torch
 
 from .base import BaseKANModel
+from efficient_kan import KAN
 
 
 class EfficientKANModel(BaseKANModel):
-    def __init__(self, cfg):
-        self.cfg = cfg
+    def __init__(self, layers_hidden, grid_size=5, spline_order=3):
+        self.layers_hidden = layers_hidden
+        self.grid_size = grid_size
+        self.spline_order = spline_order
         self.model = None
         self.device = "cpu"
 
     def build(self, device="cpu"):
-        from efficient_kan import KAN
-
         self.model = KAN(
-            layers_hidden=list(self.cfg.layers_hidden),
-            grid_size=self.cfg.get("grid_size", 5),
-            spline_order=self.cfg.get("spline_order", 3),
+            layers_hidden=list(self.layers_hidden),
+            grid_size=self.grid_size,
+            spline_order=self.spline_order,
         ).to(device)
         self.device = device
 

@@ -1,0 +1,6 @@
+_target_: src.models.pykan_model.PyKANModel
+width: [2, 5, 1]
+grid: 5
+k: 3
+base_fun: silu
+seed: 1

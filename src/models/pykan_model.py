@@ -1,20 +1,23 @@
 from kan import KAN
-
 from .base import BaseKANModel
 
 
 class PyKANModel(BaseKANModel):
-    def __init__(self, cfg):
-        self.cfg = cfg
+    def __init__(self, width, grid, k, base_fun="silu", seed=1):
+        self.width = width
+        self.grid = grid
+        self.k = k
+        self.base_fun = base_fun
+        self.seed = seed
         self.model = None
 
     def build(self, device="cpu"):
         self.model = KAN(
-            width=list(self.cfg.width),
-            grid=self.cfg.grid,
-            k=self.cfg.k,
-            base_fun=self.cfg.get("base_fun", "silu"),
-            seed=self.cfg.get("seed", 1),
+            width=list(self.width),
+            grid=self.grid,
+            k=self.k,
+            base_fun=self.base_fun,
+            seed=self.seed,
             device=device,
             auto_save=False,
         )
