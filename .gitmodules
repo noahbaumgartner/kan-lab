@@ -1,0 +1,6 @@
+[submodule "modules/fast-kan"]
+	path = modules/fast-kan
+	url = https://github.com/ZiyaoLi/fast-kan.git
+[submodule "modules/faster-kan"]
+	path = modules/faster-kan
+	url = https://github.com/AthanasiosDelis/faster-kan.git
