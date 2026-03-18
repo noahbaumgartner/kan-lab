@@ -43,3 +43,6 @@
 [submodule "modules/wavkan"]
 	path = modules/wavkan
 	url = https://github.com/zavareh1/Wav-KAN.git
+[submodule "modules/pykan"]
+	path = modules/pykan
+	url = https://github.com/KindXiaoming/pykan.git
