@@ -1,4 +1,4 @@
-from kan import KAN
+from modules.pykan.kan import KAN
 from .base import BaseKANModel
 
 
