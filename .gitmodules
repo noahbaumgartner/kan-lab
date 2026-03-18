@@ -40,3 +40,6 @@
 [submodule "modules/fkan"]
 	path = modules/fkan
 	url = https://github.com/alirezaafzalaghaei/fKAN.git
+[submodule "modules/wavkan"]
+	path = modules/wavkan
+	url = https://github.com/zavareh1/Wav-KAN.git
