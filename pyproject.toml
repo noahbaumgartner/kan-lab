@@ -16,6 +16,5 @@ dependencies = [
     "jupyter>=1.0",
     "ipykernel>=6.0",
     "pandas>=2.0",
-    "tqdm>=4.0",
-    "efficient-kan @ git+https://github.com/Blealtan/efficient-kan.git",
+    "tqdm>=4.0"
 ]

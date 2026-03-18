@@ -1,6 +1,12 @@
-[submodule "modules/fast-kan"]
-	path = modules/fast-kan
+[submodule "modules/efficientkan"]
+	path = modules/efficientkan
+	url = https://github.com/Blealtan/efficient-kan.git
+[submodule "modules/fastkan"]
+	path = modules/fastkan
 	url = https://github.com/ZiyaoLi/fast-kan.git
-[submodule "modules/faster-kan"]
-	path = modules/faster-kan
-	url = https://github.com/AthanasiosDelis/faster-kan.git
+[submodule "modules/fasterkan"]
+	path = modules/fasterkan
+	url = https://github.com/AthanasiosDelis/faster-kan
+[submodule "modules/chebykan"]
+	path = modules/chebykan
+	url = https://github.com/SynodicMonth/ChebyKAN.git
