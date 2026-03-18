@@ -1,7 +1,7 @@
 import torch
 
 from .base import BaseKANModel
-from efficient_kan import KAN
+from ...modules.efficientkan.src.efficient_kan import KAN
 
 
 class EfficientKANModel(BaseKANModel):
