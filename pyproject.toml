@@ -16,4 +16,5 @@ dependencies = [
     "ipykernel>=6.0",
     "pandas>=2.0",
     "tqdm>=4.0",
+    "pykan>=0.2.8",
 ]
