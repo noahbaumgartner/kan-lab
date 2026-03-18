@@ -24,9 +24,12 @@ class Trainer:
 
         # setup MLflow
         mlflow.set_tracking_uri(cfg.get("mlflow_tracking_uri", "mlruns"))
-        mlflow.set_experiment(cfg.get("experiment_name", "kan-lab"))
+        dataset_class = cfg.dataset.get("_target_", "unknown")
+        dataset_name = dataset_class.rsplit(".", 1)[-1].replace("Dataset", "")
+        mlflow.set_experiment(dataset_name)
 
-        with mlflow.start_run():
+        run_name = _build_run_name(cfg)
+        with mlflow.start_run(run_name=run_name):
             # log config parameters
             flat_cfg = _flatten_dict(OmegaConf.to_container(cfg, resolve=True))
             mlflow.log_params(flat_cfg)
@@ -64,6 +67,12 @@ class Trainer:
             mlflow.log_artifact("model.pt")
 
         return results
+
+
+def _build_run_name(cfg):
+    model_class = cfg.model.get("_target_", "unknown")
+    model_name = model_class.rsplit(".", 1)[-1].replace("Model", "")
+    return model_name
 
 
 def _flatten_dict(d, parent_key="", sep="."):
