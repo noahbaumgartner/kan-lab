@@ -8,4 +8,4 @@ experiment_name: model-comparison
 hydra:
   sweeper:
     params:
-      model: pykan,efficient_kan,mlp
+      model: pykan,efficient_kan,mlp,fast_kan
