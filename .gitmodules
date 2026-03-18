@@ -10,3 +10,36 @@
 [submodule "modules/chebykan"]
 	path = modules/chebykan
 	url = https://github.com/SynodicMonth/ChebyKAN.git
+[submodule "modules/bsrbfkan"]
+	path = modules/bsrbfkan
+	url = https://github.com/hoangthangta/BSRBF_KAN.git
+[submodule "modules/relukan"]
+	path = modules/relukan
+	url = https://github.com/quiqi/relu_kan.git
+[submodule "modules/afkan"]
+	path = modules/afkan
+	url = https://github.com/hoangthangta/All-KAN.git
+[submodule "modules/fckan"]
+	path = modules/fckan
+	url = https://github.com/hoangthangta/FC_KAN.git
+[submodule "modules/fourierkan"]
+	path = modules/fourierkan
+	url = https://github.com/GistNoesis/FourierKAN.git
+[submodule "modules/gskan"]
+	path = modules/gskan
+	url = https://github.com/rambamn48/gs-impl.git
+[submodule "modules/dropkan"]
+	path = modules/dropkan
+	url = https://github.com/Ghaith81/dropkan.git
+[submodule "modules/sinekan"]
+	path = modules/sinekan
+	url = https://github.com/ereinha/SineKAN.git
+[submodule "modules/rkan"]
+	path = modules/rkan
+	url = https://github.com/alirezaafzalaghaei/rKAN.git
+[submodule "modules/fkan"]
+	path = modules/fkan
+	url = https://github.com/alirezaafzalaghaei/fKAN.git
+[submodule "wavkan"]
+	path = wavkan
+	url = https://github.com/zavareh1/Wav-KAN.git
