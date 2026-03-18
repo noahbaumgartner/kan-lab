@@ -33,3 +33,26 @@ uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
 # notebooks
 uv run jupyter notebook notebooks/
 ```
+
+## Modules
+
+The following KAN variants are submodules in `modules/`, which can be evaluated in this project.
+
+| Module         | Repository                                                                  |
+| -------------- | --------------------------------------------------------------------------- |
+| `pykan`        | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                 |
+| `efficientkan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         |
+| `dropkan`      | [Ghaith81/dropkan](https://github.com/Ghaith81/dropkan)                     |
+| `gskan`        | [rambamn48/gs-impl](https://github.com/rambamn48/gs-impl)                   |
+| `chebykan`     | [SynodicMonth/ChebyKAN](https://github.com/SynodicMonth/ChebyKAN)           |
+| `fkan`         | [alirezaafzalaghaei/fKAN](https://github.com/alirezaafzalaghaei/fKAN)       |
+| `rkan`         | [alirezaafzalaghaei/rKAN](https://github.com/alirezaafzalaghaei/rKAN)       |
+| `fourierkan`   | [GistNoesis/FourierKAN](https://github.com/GistNoesis/FourierKAN)           |
+| `sinekan`      | [ereinha/SineKAN](https://github.com/ereinha/SineKAN)                       |
+| `wavkan`       | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                     |
+| `fastkan`      | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     |
+| `fasterkan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) |
+| `bsrbfkan`     | [hoangthangta/BSRBF_KAN](https://github.com/hoangthangta/BSRBF_KAN)         |
+| `relukan`      | [quiqi/relu_kan](https://github.com/quiqi/relu_kan)                         |
+| `afkan`        | [hoangthangta/All-KAN](https://github.com/hoangthangta/All-KAN)             |
+| `fckan`        | [hoangthangta/FC_KAN](https://github.com/hoangthangta/FC_KAN)               |
