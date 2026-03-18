@@ -1,7 +1,7 @@
 import torch
 
 from .base import BaseKANModel
-from ...modules.fasterkan.fasterkan import FasterKAN
+from modules.fasterkan.fasterkan import FasterKAN
 
 
 class FasterKANModel(BaseKANModel):
