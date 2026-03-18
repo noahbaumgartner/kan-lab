@@ -1,0 +1,5 @@
+_target_: src.models.faster_kan_model.FasterKANModel
+layers_hidden: [2, 5, 1]
+grid_min: -1.2
+grid_max: 1.2
+num_grids: 8
