@@ -34,6 +34,27 @@ uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
 uv run jupyter notebook notebooks/
 ```
 
+## Datasets
+
+For the datasets I've selected 10 functional, synthetic datasets and 10 regression datasets.
+
+### Functional
+
+Synthetic functions from the foundational KAN paper (https://arxiv.org/abs/2404.19756).
+
+| #   | Name                | Formel                                                     |
+| --- | ------------------- | ---------------------------------------------------------- |
+| 1   | **ExpSin**          | `f(x,y) = exp(sin(π·x) + y²)`                              |
+| 2   | **DeepFormula**     | `f(x1..x4) = exp((sin(π·(x1²+x2²)) + sin(π·(x3²+x4²)))/2)` |
+| 3   | **Bessel**          | `f(x,y) = exp(J₀(20x) + y²)`                               |
+| 4   | **Multiplication**  | `f(x,y) = x·y`                                             |
+| 5   | **LogComposition**  | `f(x,y) = sin(2·(log(x) + log(y)))`                        |
+| 6   | **Norm2D**          | `f(x,y) = sqrt(x² + y²)`                                   |
+| 7   | **GaussianPeaks**   | `f(x) = Σ exp(-(x - cᵢ)²·300)`, 5 Peaks                    |
+| 8   | **Feynman I.37.4**  | `f = I1 + I2 + 2·sqrt(I1·I2)·cos(δ)`                       |
+| 9   | **Feynman I.29.16** | `f = sqrt(x1² + x2² - 2·x1·x2·cos(θ1-θ2))`                 |
+| 10  | **Feynman I.41.16** | `f = ℏω³/(π²c²·(exp(ℏω/(kb·T))-1))`                        |
+
 ## Modules
 
 The following KAN variants are submodules in `modules/`, which can be evaluated in this project.
