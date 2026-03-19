@@ -4,7 +4,10 @@ This is the KAN lab. An experimentation space for my specialization project "Rec
 
 ## Setup
 
-This repository works with `uv`. To run the command in the section usage, clone the repo and run `uv sync`locally.
+This repository works with `uv` and uses Git submodules. To set it up locally:
+
+1. Clone this repository with: `git clone --recurse-submodules <repo-url>`
+2. Run `uv sync` to install the needed python version and the dependencies
 
 ## Usage
 
@@ -36,24 +39,20 @@ uv run jupyter notebook notebooks/
 
 ## Datasets
 
-For the datasets I've selected 10 functional, synthetic datasets and 10 regression datasets.
+This section define the datasets from the foundational KAN paper (https://arxiv.org/abs/2404.19756): 5 toy datasets (Section 3.1) and 5 Feynman equations (Section 3.3).
 
-### Functional
-
-Synthetic functions from the foundational KAN paper (https://arxiv.org/abs/2404.19756).
-
-| #   | Name                | Formel                                                     |
-| --- | ------------------- | ---------------------------------------------------------- |
-| 1   | **ExpSin**          | `f(x,y) = exp(sin(π·x) + y²)`                              |
-| 2   | **DeepFormula**     | `f(x1..x4) = exp((sin(π·(x1²+x2²)) + sin(π·(x3²+x4²)))/2)` |
-| 3   | **Bessel**          | `f(x,y) = exp(J₀(20x) + y²)`                               |
-| 4   | **Multiplication**  | `f(x,y) = x·y`                                             |
-| 5   | **LogComposition**  | `f(x,y) = sin(2·(log(x) + log(y)))`                        |
-| 6   | **Norm2D**          | `f(x,y) = sqrt(x² + y²)`                                   |
-| 7   | **GaussianPeaks**   | `f(x) = Σ exp(-(x - cᵢ)²·300)`, 5 Peaks                    |
-| 8   | **Feynman I.37.4**  | `f = I1 + I2 + 2·sqrt(I1·I2)·cos(δ)`                       |
-| 9   | **Feynman I.29.16** | `f = sqrt(x1² + x2² - 2·x1·x2·cos(θ1-θ2))`                 |
-| 10  | **Feynman I.41.16** | `f = ℏω³/(π²c²·(exp(ℏω/(kb·T))-1))`                        |
+| #   | Name                | Formula                                                 | Variables                         | KAN Shape    |
+| --- | ------------------- | ------------------------------------------------------- | --------------------------------- | ------------ |
+| 1   | **Bessel**          | `f(x) = J₀(20x)`                                        | x                                 | [1, 1]       |
+| 2   | **ExpSin**          | `f(x,y) = exp(sin(πx) + y²)`                            | x, y                              | [2, 1, 1]    |
+| 3   | **Multiplication**  | `f(x,y) = xy`                                           | x, y                              | [2, 2, 1]    |
+| 4   | **HighDim**         | `f(x₁..x₁₀₀) = exp(1/100 · Σ sin²(πxᵢ/2))`              | x₁..x₁₀₀                          | [100, 1, 1]  |
+| 5   | **DeepFormula**     | `f(x₁..x₄) = exp(½(sin(π(x₁²+x₂²)) + sin(π(x₃²+x₄²))))` | x₁..x₄                            | [4, 4, 2, 1] |
+| 6   | **Feynman I.6.2**   | `f(θ,σ) = exp(-θ²/(2σ²)) / √(2πσ²)`                     | θ, σ                              | [2, 2, 1]    |
+| 7   | **Feynman I.6.2b**  | `f(θ,θ₁,σ) = exp(-(θ-θ₁)²/(2σ²)) / √(2πσ²)`             | θ, θ₁, σ                          | [3, 2, 1, 1] |
+| 8   | **Feynman I.9.18**  | `f = Gm₁m₂ / ((x₂-x₁)²+(y₂-y₁)²+(z₂-z₁)²)`              | G, m₁, m₂, x₁, x₂, y₁, y₂, z₁, z₂ | [6, 4, 1, 1] |
+| 9   | **Feynman I.12.11** | `f = q(Ef + Bv·sinθ)`                                   | q, Ef, B, v, θ                    | [2, 2, 1]    |
+| 10  | **Feynman I.13.12** | `f = Gm₁m₂(1/r₂ - 1/r₁)`                                | G, m₁, m₂, r₁, r₂                 | [2, 2, 1]    |
 
 ## Modules
 
