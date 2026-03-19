@@ -11,6 +11,9 @@ class PyKANModel(BaseKANModel):
         self.seed = seed
         self.model = None
 
+    def set_width(self, width):
+        self.width = width
+
     def build(self, device="cpu"):
         self.model = KAN(
             width=list(self.width),

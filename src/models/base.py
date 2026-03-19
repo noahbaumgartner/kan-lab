@@ -5,6 +5,10 @@ import torch
 
 class BaseKANModel(ABC):
     @abstractmethod
+    def set_width(self, width: list[int]) -> None:
+        """Set the network layer widths (must be called before build)."""
+
+    @abstractmethod
     def build(self, device: str = "cpu") -> None:
         """Construct the underlying model from config."""
 

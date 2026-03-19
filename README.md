@@ -28,7 +28,7 @@ uv run python train.py model.grid=10 training.steps=200
 uv run python train.py --multirun model.grid=3,5,10,20
 
 # sweep based on experiment
-uv run python train.py --multirun experiment=model_comparison
+uv run python train.py --multirun +experiment=model_comparison
 
 # MLflow UI
 uv run mlflow ui --backend-store-uri sqlite:///mlflow.db

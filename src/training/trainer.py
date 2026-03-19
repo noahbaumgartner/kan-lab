@@ -16,13 +16,14 @@ class Trainer:
     def train(self):
         cfg = self.cfg
 
-        # build model
-        model = instantiate(cfg.model)
-        model.build(device=self.device)
-
         # load dataset
         dataset_obj = instantiate(cfg.dataset)
         dataset = dataset_obj.create(device=self.device)
+
+        # build model with dataset's optimal width
+        model = instantiate(cfg.model)
+        model.set_width(dataset_obj.kan_width)
+        model.build(device=self.device)
 
         # setup MLflow
         mlflow.set_tracking_uri(cfg.get("mlflow_tracking_uri", "mlruns"))

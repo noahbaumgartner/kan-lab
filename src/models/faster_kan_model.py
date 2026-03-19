@@ -13,6 +13,9 @@ class FasterKANModel(BaseKANModel):
         self.model = None
         self.device = "cpu"
 
+    def set_width(self, width):
+        self.layers_hidden = width
+
     def build(self, device="cpu"):
         self.model = FasterKAN(
             layers_hidden=list(self.layers_hidden),

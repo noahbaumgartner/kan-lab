@@ -9,3 +9,4 @@ hydra:
   sweeper:
     params:
       model: pykan,efficient_kan,mlp,fast_kan
+      dataset: sincos,bessel,expsin,multiplication,highdim,deepformula
