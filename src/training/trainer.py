@@ -4,6 +4,8 @@ import mlflow
 import torch
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
+from mlflow.data.meta_dataset import MetaDataset
+from mlflow.data.code_dataset_source import CodeDatasetSource
 
 
 class Trainer:
@@ -26,10 +28,15 @@ class Trainer:
         mlflow.set_tracking_uri(cfg.get("mlflow_tracking_uri", "mlruns"))
         dataset_class = cfg.dataset.get("_target_", "unknown")
         dataset_name = dataset_class.rsplit(".", 1)[-1].replace("Dataset", "")
-        mlflow.set_experiment(dataset_name)
+        mlflow.set_experiment(cfg.get("experiment_name", "kan-lab"))
 
         run_name = _build_run_name(cfg)
         with mlflow.start_run(run_name=run_name):
+            mlflow.log_input(
+                MetaDataset(source=CodeDatasetSource({"tags": {}}), name=dataset_name),
+                context="training",
+            )
+
             # log config parameters
             flat_cfg = _flatten_dict(OmegaConf.to_container(cfg, resolve=True))
             mlflow.log_params(flat_cfg)
