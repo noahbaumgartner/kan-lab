@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODELS=(pykan efficient_kan fast_kan faster_kan mlp)
+MODELS=(pykan efficient_kan fast_kan faster_kan chebykan relukan wavkan mlp)
 DATASETS=(bessel expsin multiplication highdim deepformula)
 
 for model in "${MODELS[@]}"; do

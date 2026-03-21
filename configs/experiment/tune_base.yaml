@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - override /hydra/sweeper: optuna
+  - override /hydra/sweeper/sampler: tpe
+
+training:
+  steps: 100
+
+hydra:
+  sweeper:
+    sampler:
+      seed: 123
+    direction: minimize
+    n_trials: 50
+    params:
+      model.n_hidden_layers: range(1, 4)
+      model.hidden_width: range(2, 21)
+      training.lr: tag(log, interval(0.001, 1.0))
+      training.lamb: tag(log, interval(0.0001, 0.1))

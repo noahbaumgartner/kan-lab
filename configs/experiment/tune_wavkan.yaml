@@ -1,14 +1,13 @@
 # @package _global_
 defaults:
   - tune_base
-  - override /model: efficient_kan
+  - override /model: wavkan
   - override /training: adam
 
-experiment_name: tune-efficient-kan
+experiment_name: tune-wavkan
 
 hydra:
   sweeper:
     params:
-      model.grid_size: range(3, 51)
-      model.spline_order: range(2, 6)
+      model.wavelet_type: choice(mexican_hat, morlet, dog, meyer, shannon)
       training.optimizer: choice(Adam, LBFGS)

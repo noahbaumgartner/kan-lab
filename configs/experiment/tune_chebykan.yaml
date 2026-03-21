@@ -1,14 +1,13 @@
 # @package _global_
 defaults:
   - tune_base
-  - override /model: efficient_kan
+  - override /model: chebykan
   - override /training: adam
 
-experiment_name: tune-efficient-kan
+experiment_name: tune-chebykan
 
 hydra:
   sweeper:
     params:
-      model.grid_size: range(3, 51)
-      model.spline_order: range(2, 6)
+      model.degree: range(2, 9)
       training.optimizer: choice(Adam, LBFGS)
