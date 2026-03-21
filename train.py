@@ -4,7 +4,13 @@ matplotlib.use("Agg")
 
 import hydra
 from hydra.utils import instantiate
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
+
+OmegaConf.register_new_resolver(
+    "make_width",
+    lambda in_d, out_d, n_h, h_w: [int(in_d)] + [int(h_w)] * int(n_h) + [int(out_d)],
+    replace=True,
+)
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")

@@ -6,16 +6,13 @@ from modules.fastkan.fastkan import FastKAN, FastKANLayer
 
 
 class FastKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, grid_min=-2.0, grid_max=2.0, num_grids=8):
+    def __init__(self, layers_hidden, grid_min=-2.0, grid_max=2.0, num_grids=8, **kwargs):
         self.layers_hidden = layers_hidden
         self.grid_min = grid_min
         self.grid_max = grid_max
         self.num_grids = num_grids
         self.model = None
         self.device = "cpu"
-
-    def set_width(self, width):
-        self.layers_hidden = width
 
     def build(self, device="cpu"):
         layers_hidden = list(self.layers_hidden)

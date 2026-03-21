@@ -5,15 +5,12 @@ from modules.efficientkan.src.efficient_kan import KAN
 
 
 class EfficientKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, grid_size=5, spline_order=3):
+    def __init__(self, layers_hidden, grid_size=5, spline_order=3, **kwargs):
         self.layers_hidden = layers_hidden
         self.grid_size = grid_size
         self.spline_order = spline_order
         self.model = None
         self.device = "cpu"
-
-    def set_width(self, width):
-        self.layers_hidden = width
 
     def build(self, device="cpu"):
         self.model = KAN(

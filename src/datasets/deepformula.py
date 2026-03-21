@@ -2,9 +2,10 @@ import torch
 
 
 class DeepFormulaDataset:
-    kan_width = [4, 4, 2, 1]
+    input_dim = 4
+    output_dim = 1
 
-    def __init__(self, n_train=1000, n_test=100):
+    def __init__(self, n_train=1000, n_test=100, **kwargs):
         self.n_train = n_train
         self.n_test = n_test
 

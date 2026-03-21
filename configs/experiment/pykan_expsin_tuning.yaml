@@ -1,0 +1,15 @@
+# @package _global_
+defaults:
+  - override /model: pykan
+  - override /dataset: expsin
+  - override /training: default
+
+experiment_name: pykan-expsin-tuning
+
+hydra:
+  sweeper:
+    params:
+      model.grid: 3,5,10,20,50
+      model.k: 2,3,4,5
+      training.steps: 100,200,500
+      training.lamb: 0.0,0.001,0.01,0.1

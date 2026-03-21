@@ -10,6 +10,6 @@ trainer:
 
 defaults:
   - model: pykan
-  - dataset: sincos
+  - dataset: bessel
   - training: default
   - _self_

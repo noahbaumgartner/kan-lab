@@ -1,4 +1,3 @@
-from .sincos import SinCosDataset
 from .bessel import BesselDataset
 from .expsin import ExpSinDataset
 from .multiplication import MultiplicationDataset

@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /dataset: sincos
+  - override /dataset: bessel
   - override /training: default
 
 experiment_name: model-comparison
@@ -9,4 +9,4 @@ hydra:
   sweeper:
     params:
       model: pykan,efficient_kan,mlp,fast_kan
-      dataset: sincos,bessel,expsin,multiplication,highdim,deepformula
+      dataset: bessel,expsin,multiplication,highdim,deepformula

@@ -1,5 +1,7 @@
 _target_: src.models.pykan_model.PyKANModel
-width: [2, 5, 1]
+n_hidden_layers: 1
+hidden_width: 5
+width: ${make_width:${dataset.input_dim},${dataset.output_dim},${model.n_hidden_layers},${model.hidden_width}}
 grid: 5
 k: 3
 base_fun: silu

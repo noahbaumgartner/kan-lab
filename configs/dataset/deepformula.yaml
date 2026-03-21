@@ -1,3 +1,9 @@
 _target_: src.datasets.deepformula.DeepFormulaDataset
 n_train: 1000
 n_test: 100
+
+# metadata for width construction (not passed to __init__)
+input_dim: 4
+output_dim: 1
+hidden_width_min: 2
+hidden_width_max: 32

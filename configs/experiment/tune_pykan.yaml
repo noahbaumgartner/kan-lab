@@ -1,0 +1,23 @@
+# @package _global_
+defaults:
+  - override /model: pykan
+  - override /training: default
+  - override /hydra/sweeper: optuna
+  - override /hydra/sweeper/sampler: tpe
+
+experiment_name: tune-pykan
+
+hydra:
+  sweeper:
+    sampler:
+      seed: 42
+    direction: minimize
+    n_trials: 50
+    params:
+      model.n_hidden_layers: range(1, 4)
+      model.hidden_width: range(2, 21)
+      model.grid: range(3, 51)
+      model.k: range(2, 6)
+      training.steps: range(50, 501, step=50)
+      training.lr: tag(log, interval(0.01, 1.0))
+      training.lamb: tag(log, interval(0.0001, 0.1))

@@ -1,0 +1,25 @@
+# @package _global_
+defaults:
+  - override /model: fast_kan
+  - override /training: adam
+  - override /hydra/sweeper: optuna
+  - override /hydra/sweeper/sampler: tpe
+
+experiment_name: tune-fast-kan
+
+hydra:
+  sweeper:
+    sampler:
+      seed: 42
+    direction: minimize
+    n_trials: 50
+    params:
+      model.n_hidden_layers: range(1, 4)
+      model.hidden_width: range(2, 21)
+      model.num_grids: range(4, 33)
+      model.grid_min: interval(-3.0, -0.5)
+      model.grid_max: interval(0.5, 3.0)
+      training.optimizer: choice(Adam, LBFGS)
+      training.steps: range(50, 501, step=50)
+      training.lr: tag(log, interval(0.001, 1.0))
+      training.lamb: tag(log, interval(0.0001, 0.1))

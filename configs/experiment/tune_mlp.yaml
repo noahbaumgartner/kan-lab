@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - override /model: mlp
+  - override /training: default
+  - override /hydra/sweeper: optuna
+  - override /hydra/sweeper/sampler: tpe
+
+experiment_name: tune-mlp
+
+hydra:
+  sweeper:
+    sampler:
+      seed: 42
+    direction: minimize
+    n_trials: 50
+    params:
+      model.n_hidden_layers: range(1, 5)
+      model.hidden_width: range(2, 21)
+      training.steps: range(50, 501, step=50)
+      training.lr: tag(log, interval(0.001, 1.0))
+      training.lamb: tag(log, interval(0.0001, 0.1))

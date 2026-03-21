@@ -3,13 +3,10 @@ from .base import BaseKANModel
 
 
 class MLPModel(BaseKANModel):
-    def __init__(self, width, seed=1):
+    def __init__(self, width, seed=1, **kwargs):
         self.width = width
         self.seed = seed
         self.model = None
-
-    def set_width(self, width):
-        self.width = width
 
     def build(self, device="cpu"):
         self.model = MLP(

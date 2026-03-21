@@ -20,9 +20,8 @@ class Trainer:
         dataset_obj = instantiate(cfg.dataset)
         dataset = dataset_obj.create(device=self.device)
 
-        # build model with dataset's optimal width
+        # build model (width resolved from config via make_width resolver)
         model = instantiate(cfg.model)
-        model.set_width(dataset_obj.kan_width)
         model.build(device=self.device)
 
         # setup MLflow

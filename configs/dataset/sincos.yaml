@@ -1,3 +1,0 @@
-_target_: src.datasets.sincos.SinCosDataset
-n_train: 1000
-n_test: 100

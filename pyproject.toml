@@ -17,4 +17,5 @@ dependencies = [
     "pandas>=2.0",
     "tqdm>=4.0",
     "pykan>=0.2.8",
+    "hydra-optuna-sweeper>=1.2",
 ]

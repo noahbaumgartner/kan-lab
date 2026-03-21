@@ -3,16 +3,13 @@ from .base import BaseKANModel
 
 
 class PyKANModel(BaseKANModel):
-    def __init__(self, width, grid, k, base_fun="silu", seed=1):
+    def __init__(self, width, grid, k, base_fun="silu", seed=1, **kwargs):
         self.width = width
         self.grid = grid
         self.k = k
         self.base_fun = base_fun
         self.seed = seed
         self.model = None
-
-    def set_width(self, width):
-        self.width = width
 
     def build(self, device="cpu"):
         self.model = KAN(
