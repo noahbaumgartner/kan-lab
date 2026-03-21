@@ -13,3 +13,5 @@ multirun/
 *.db
 *.pt
 *.log
+.claude/
+CLAUDE.md

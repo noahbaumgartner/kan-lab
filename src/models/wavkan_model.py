@@ -3,37 +3,25 @@ from pathlib import Path
 
 import torch
 
-# Add the fasterkan module root to sys.path so its internal absolute imports resolve
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "modules" / "fasterkan"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "modules" / "wavkan"))
 
 from .base import BaseKANModel
-from modules.fasterkan.fasterkan import FasterKAN
+from modules.wavkan.KAN import KAN
 
 
-class FasterKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, grid_min=-1.2, grid_max=1.2, num_grids=8, **kwargs):
+class WavKANModel(BaseKANModel):
+    def __init__(self, layers_hidden, wavelet_type="mexican_hat", **kwargs):
         self.layers_hidden = layers_hidden
-        self.grid_min = grid_min
-        self.grid_max = grid_max
-        self.num_grids = num_grids
+        self.wavelet_type = wavelet_type
         self.model = None
         self.device = "cpu"
 
     def build(self, device="cpu"):
-        self.model = FasterKAN(
+        self.model = KAN(
             layers_hidden=list(self.layers_hidden),
-            grid_min=self.grid_min,
-            grid_max=self.grid_max,
-            num_grids=self.num_grids,
+            wavelet_type=self.wavelet_type,
         ).to(device)
         self.device = device
-
-        # FasterKAN uses LayerNorm in each layer which is harmful for
-        # low-dimensional regression: LayerNorm(1) zeroes out scalar inputs,
-        # and on small hidden dims it collapses representations after large
-        # optimizer steps (especially LBFGS), causing constant model output.
-        for layer in self.model.layers:
-            layer.layernorm = torch.nn.Identity()
 
     def fit(self, dataset, steps, lr, optimizer, loss_fn, batch_size, lamb, **kwargs):
         if loss_fn is None:
@@ -59,7 +47,6 @@ class FasterKANModel(BaseKANModel):
                 y = dataset["train_label"][idx]
 
             if optimizer == "LBFGS":
-
                 def closure():
                     opt.zero_grad()
                     pred = self.model(x)

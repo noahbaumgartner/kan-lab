@@ -3,37 +3,39 @@ from pathlib import Path
 
 import torch
 
-# Add the fasterkan module root to sys.path so its internal absolute imports resolve
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "modules" / "fasterkan"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "modules" / "relukan"))
 
 from .base import BaseKANModel
-from modules.fasterkan.fasterkan import FasterKAN
+from modules.relukan.torch_relu_kan import ReLUKAN
 
 
-class FasterKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, grid_min=-1.2, grid_max=1.2, num_grids=8, **kwargs):
+class ReLUKANModel(BaseKANModel):
+    def __init__(self, layers_hidden, grid=5, k=3, **kwargs):
         self.layers_hidden = layers_hidden
-        self.grid_min = grid_min
-        self.grid_max = grid_max
-        self.num_grids = num_grids
+        self.grid = grid
+        self.k = k
         self.model = None
         self.device = "cpu"
 
     def build(self, device="cpu"):
-        self.model = FasterKAN(
-            layers_hidden=list(self.layers_hidden),
-            grid_min=self.grid_min,
-            grid_max=self.grid_max,
-            num_grids=self.num_grids,
+        self.model = ReLUKAN(
+            width=list(self.layers_hidden),
+            grid=self.grid,
+            k=self.k,
         ).to(device)
         self.device = device
 
-        # FasterKAN uses LayerNorm in each layer which is harmful for
-        # low-dimensional regression: LayerNorm(1) zeroes out scalar inputs,
-        # and on small hidden dims it collapses representations after large
-        # optimizer steps (especially LBFGS), causing constant model output.
-        for layer in self.model.layers:
-            layer.layernorm = torch.nn.Identity()
+        # Patch forward to squeeze trailing dim between layers.
+        # ReLUKANLayer outputs (batch, out, 1) but expects (batch, in) input.
+        import types
+
+        def _forward(self_model, x):
+            x = x.unsqueeze(-1)
+            for rk_layer in self_model.rk_layers:
+                x = rk_layer(x)
+            return x.squeeze(-1)
+
+        self.model.forward = types.MethodType(_forward, self.model)
 
     def fit(self, dataset, steps, lr, optimizer, loss_fn, batch_size, lamb, **kwargs):
         if loss_fn is None:
@@ -59,7 +61,6 @@ class FasterKANModel(BaseKANModel):
                 y = dataset["train_label"][idx]
 
             if optimizer == "LBFGS":
-
                 def closure():
                     opt.zero_grad()
                     pred = self.model(x)

@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /dataset: bessel
+  - override /training: default
+
+experiment_name: test
+
+hydra:
+  sweeper:
+    params:
+      model: relukan
+      dataset: expsin

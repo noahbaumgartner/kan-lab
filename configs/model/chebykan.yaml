@@ -1,0 +1,5 @@
+_target_: src.models.chebykan_model.ChebyKANModel
+n_hidden_layers: 1
+hidden_width: 5
+layers_hidden: ${make_width:${dataset.input_dim},${dataset.output_dim},${model.n_hidden_layers},${model.hidden_width}}
+degree: 4
