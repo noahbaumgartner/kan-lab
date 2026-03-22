@@ -9,4 +9,6 @@ experiment_name: tune-mlp
 hydra:
   sweeper:
     params:
+      # MLPs need more depth than KANs to match expressiveness;
+      # dataset n_hidden_max caps at 3, so 4 gives MLPs a fair chance
       model.n_hidden_layers: range(1, 5)

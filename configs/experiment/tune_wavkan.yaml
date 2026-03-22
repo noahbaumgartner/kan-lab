@@ -9,5 +9,6 @@ experiment_name: tune-wavkan
 hydra:
   sweeper:
     params:
+      # all wavelet types supported by the upstream WavKAN implementation
       model.wavelet_type: choice(mexican_hat, morlet, dog, meyer, shannon)
       training.optimizer: choice(Adam, LBFGS)

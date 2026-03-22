@@ -9,6 +9,11 @@ experiment_name: tune-pykan
 hydra:
   sweeper:
     params:
+      # 3 is pykan default (coarsest useful), 50 knots on [-1,1] data is
+      # about the limit before overfitting with 1000 training samples
       model.grid: range(3, 51)
+      # below 2 is piecewise-linear (too rigid), above 5 adds parameters
+      # without benefit on smooth test functions
       model.k: range(2, 6)
+      # pykan with LBFGS is stable here; below 0.01 converges too slowly
       training.lr: tag(log, interval(0.01, 1.0))

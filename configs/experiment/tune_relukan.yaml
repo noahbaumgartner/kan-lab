@@ -9,6 +9,7 @@ experiment_name: tune-relukan
 hydra:
   sweeper:
     params:
+      # grid and k play the same role as in spline-based KANs, same range
       model.grid: range(3, 51)
       model.k: range(2, 6)
       training.optimizer: choice(Adam, LBFGS)
