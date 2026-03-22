@@ -1,10 +1,8 @@
-import hashlib
+import random
 import time
 from datetime import datetime
 
 import mlflow
-import numpy as np
-import torch
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 
@@ -27,28 +25,15 @@ class Trainer:
 
         # setup MLflow
         mlflow.set_tracking_uri(cfg.get("mlflow_tracking_uri", "mlruns"))
-        dataset_class = cfg.dataset.get("_target_", "unknown")
-        dataset_name = dataset_class.rsplit(".", 1)[-1].replace("Dataset", "")
         mlflow.set_experiment(_build_experiment_name(cfg))
 
-        run_name = _build_run_name(cfg)
-        with mlflow.start_run(run_name=run_name):
-            dataset_cfg = OmegaConf.to_container(cfg.dataset, resolve=True)
-            dataset_digest = hashlib.md5(
-                str(sorted(dataset_cfg.items())).encode()
-            ).hexdigest()[:8]
-            mlflow_dataset = mlflow.data.from_numpy(
-                features=dataset["train_input"].cpu().numpy(),
-                targets=dataset["train_label"].cpu().numpy(),
-                name=dataset_name,
-            )
-            mlflow_dataset._digest = dataset_digest
-            mlflow.log_input(mlflow_dataset, context="training")
-
+        with mlflow.start_run(run_name=_generate_run_name(cfg)):
             # log config parameters
             flat_cfg = _flatten_dict(OmegaConf.to_container(cfg, resolve=True))
             mlflow.log_params(flat_cfg)
             mlflow.log_param("parameter_count", model.parameter_count())
+            mlflow.log_param("dataset", _get_dataset_name(cfg))
+            mlflow.log_param("model", _get_model_name(cfg))
 
             # train
             t_start = time.time()
@@ -77,10 +62,6 @@ class Trainer:
             mlflow.log_metric("final_test_rmse", float(results["test_loss"][-1]))
             mlflow.log_metric("training_time_sec", train_time)
 
-            # save model
-            torch.save(model.get_model().state_dict(), "model.pt")
-            mlflow.log_artifact("model.pt")
-
         return results
 
 
@@ -96,10 +77,62 @@ def _build_experiment_name(cfg):
     return _experiment_name_cache
 
 
-def _build_run_name(cfg):
+_ADJECTIVES = [
+    "swift",
+    "bright",
+    "calm",
+    "bold",
+    "keen",
+    "warm",
+    "cool",
+    "fair",
+    "wild",
+    "deep",
+    "glad",
+    "pure",
+    "vast",
+    "free",
+    "wise",
+    "rare",
+]
+_NOUNS = [
+    "fox",
+    "owl",
+    "elk",
+    "jay",
+    "ram",
+    "bee",
+    "ant",
+    "yak",
+    "emu",
+    "cod",
+    "hen",
+    "ape",
+    "bat",
+    "cat",
+    "dog",
+    "hawk",
+]
+
+
+_sysrand = random.SystemRandom()
+
+
+def _generate_run_name(cfg):
+    adjective = _sysrand.choice(_ADJECTIVES)
+    noun = _sysrand.choice(_NOUNS)
+    number = _sysrand.randint(100, 999)
+    return f"{adjective}-{noun}-{number}"
+
+
+def _get_model_name(cfg):
     model_class = cfg.model.get("_target_", "unknown")
-    model_name = model_class.rsplit(".", 1)[-1].replace("Model", "")
-    return model_name
+    return model_class.rsplit(".", 1)[-1].replace("Model", "")
+
+
+def _get_dataset_name(cfg):
+    dataset_class = cfg.dataset.get("_target_", "unknown")
+    return dataset_class.rsplit(".", 1)[-1].replace("Dataset", "")
 
 
 def _flatten_dict(d, parent_key="", sep="."):
