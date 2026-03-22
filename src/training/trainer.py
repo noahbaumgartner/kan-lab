@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 import mlflow
 import torch
@@ -28,7 +29,7 @@ class Trainer:
         mlflow.set_tracking_uri(cfg.get("mlflow_tracking_uri", "mlruns"))
         dataset_class = cfg.dataset.get("_target_", "unknown")
         dataset_name = dataset_class.rsplit(".", 1)[-1].replace("Dataset", "")
-        mlflow.set_experiment(cfg.get("experiment_name", "kan-lab"))
+        mlflow.set_experiment(_build_experiment_name(cfg))
 
         run_name = _build_run_name(cfg)
         with mlflow.start_run(run_name=run_name):
@@ -36,6 +37,7 @@ class Trainer:
                 MetaDataset(source=CodeDatasetSource({"tags": {}}), name=dataset_name),
                 context="training",
             )
+            mlflow.set_tag("dataset", dataset_name)
 
             # log config parameters
             flat_cfg = _flatten_dict(OmegaConf.to_container(cfg, resolve=True))
@@ -74,6 +76,18 @@ class Trainer:
             mlflow.log_artifact("model.pt")
 
         return results
+
+
+_experiment_name_cache = None
+
+
+def _build_experiment_name(cfg):
+    global _experiment_name_cache
+    if _experiment_name_cache is None:
+        base_name = cfg.get("experiment_name", "kan-lab")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        _experiment_name_cache = f"{base_name}_{timestamp}"
+    return _experiment_name_cache
 
 
 def _build_run_name(cfg):
