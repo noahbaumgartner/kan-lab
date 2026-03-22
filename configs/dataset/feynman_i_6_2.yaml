@@ -1,0 +1,14 @@
+_target_: src.datasets.feynman_i_6_2.FeynmanI62Dataset
+n_train: 1000
+n_test: 100
+
+# metadata for width construction (not passed to __init__)
+input_dim: 2
+output_dim: 1
+
+# paper shape: [2, 2, 1, 1] — 2 hidden layers
+n_hidden: 2
+n_hidden_min: 1
+n_hidden_max: 3
+hidden_width_min: 1
+hidden_width_max: 3

@@ -1,0 +1,15 @@
+_target_: src.datasets.feynman_i_12_11.FeynmanI1211Dataset
+n_train: 1000
+n_test: 100
+
+# metadata for width construction (not passed to __init__)
+input_dim: 5
+output_dim: 1
+
+# paper shape: [2, 2, 2, 1] — 2 hidden layers
+# note: paper uses 2 inputs (q and combined terms), but we pass all 5 raw variables
+n_hidden: 2
+n_hidden_min: 1
+n_hidden_max: 3
+hidden_width_min: 1
+hidden_width_max: 5

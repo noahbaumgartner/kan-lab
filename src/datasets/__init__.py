@@ -3,3 +3,8 @@ from .expsin import ExpSinDataset
 from .multiplication import MultiplicationDataset
 from .highdim import HighDimDataset
 from .deepformula import DeepFormulaDataset
+from .feynman_i_6_2 import FeynmanI62Dataset
+from .feynman_i_6_2b import FeynmanI62bDataset
+from .feynman_i_9_18 import FeynmanI918Dataset
+from .feynman_i_12_11 import FeynmanI1211Dataset
+from .feynman_i_13_12 import FeynmanI1312Dataset
