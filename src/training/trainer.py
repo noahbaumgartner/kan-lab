@@ -1,12 +1,12 @@
+import hashlib
 import time
 from datetime import datetime
 
 import mlflow
+import numpy as np
 import torch
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
-from mlflow.data.meta_dataset import MetaDataset
-from mlflow.data.code_dataset_source import CodeDatasetSource
 
 
 class Trainer:
@@ -33,11 +33,17 @@ class Trainer:
 
         run_name = _build_run_name(cfg)
         with mlflow.start_run(run_name=run_name):
-            mlflow.log_input(
-                MetaDataset(source=CodeDatasetSource({"tags": {}}), name=dataset_name),
-                context="training",
+            dataset_cfg = OmegaConf.to_container(cfg.dataset, resolve=True)
+            dataset_digest = hashlib.md5(
+                str(sorted(dataset_cfg.items())).encode()
+            ).hexdigest()[:8]
+            mlflow_dataset = mlflow.data.from_numpy(
+                features=dataset["train_input"].cpu().numpy(),
+                targets=dataset["train_label"].cpu().numpy(),
+                name=dataset_name,
             )
-            mlflow.set_tag("dataset", dataset_name)
+            mlflow_dataset._digest = dataset_digest
+            mlflow.log_input(mlflow_dataset, context="training")
 
             # log config parameters
             flat_cfg = _flatten_dict(OmegaConf.to_container(cfg, resolve=True))
