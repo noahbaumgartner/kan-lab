@@ -61,9 +61,9 @@ The following KAN variants are submodules in `modules/`, which can be evaluated 
 | Module         | Repository                                                                  | Paper                                                |
 | -------------- | --------------------------------------------------------------------------- | ---------------------------------------------------- |
 | `pykan`        | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                 | [arXiv:2404.19756](https://arxiv.org/abs/2404.19756) |
-| `efficientkan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         | —                                                    |
+| `efficientkan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         | - (GitHub only)                                      |
 | `fastkan`      | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     | [arXiv:2405.06721](https://arxiv.org/abs/2405.06721) |
 | `chebykan`     | [SynodicMonth/ChebyKAN](https://github.com/SynodicMonth/ChebyKAN)           | [arXiv:2405.07200](https://arxiv.org/abs/2405.07200) |
-| `fasterkan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) | —                                                    |
+| `fasterkan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) | - (GitHub only)                                      |
 | `wavkan`       | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                     | [arXiv:2405.12832](https://arxiv.org/abs/2405.12832) |
 | `relukan`      | [quiqi/relu_kan](https://github.com/quiqi/relu_kan)                         | [arXiv:2406.02075](https://arxiv.org/abs/2406.02075) |
