@@ -58,21 +58,12 @@ This section define the datasets from the foundational KAN paper (https://arxiv.
 
 The following KAN variants are submodules in `modules/`, which can be evaluated in this project.
 
-| Module         | Repository                                                                  |
-| -------------- | --------------------------------------------------------------------------- |
-| `pykan`        | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                 |
-| `efficientkan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         |
-| `dropkan`      | [Ghaith81/dropkan](https://github.com/Ghaith81/dropkan)                     |
-| `gskan`        | [rambamn48/gs-impl](https://github.com/rambamn48/gs-impl)                   |
-| `chebykan`     | [SynodicMonth/ChebyKAN](https://github.com/SynodicMonth/ChebyKAN)           |
-| `fkan`         | [alirezaafzalaghaei/fKAN](https://github.com/alirezaafzalaghaei/fKAN)       |
-| `rkan`         | [alirezaafzalaghaei/rKAN](https://github.com/alirezaafzalaghaei/rKAN)       |
-| `fourierkan`   | [GistNoesis/FourierKAN](https://github.com/GistNoesis/FourierKAN)           |
-| `sinekan`      | [ereinha/SineKAN](https://github.com/ereinha/SineKAN)                       |
-| `wavkan`       | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                     |
-| `fastkan`      | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     |
-| `fasterkan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) |
-| `bsrbfkan`     | [hoangthangta/BSRBF_KAN](https://github.com/hoangthangta/BSRBF_KAN)         |
-| `relukan`      | [quiqi/relu_kan](https://github.com/quiqi/relu_kan)                         |
-| `afkan`        | [hoangthangta/All-KAN](https://github.com/hoangthangta/All-KAN)             |
-| `fckan`        | [hoangthangta/FC_KAN](https://github.com/hoangthangta/FC_KAN)               |
+| Module         | Repository                                                                  | Paper                                                |
+| -------------- | --------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `pykan`        | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                 | [arXiv:2404.19756](https://arxiv.org/abs/2404.19756) |
+| `efficientkan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         | —                                                    |
+| `fastkan`      | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     | [arXiv:2405.06721](https://arxiv.org/abs/2405.06721) |
+| `chebykan`     | [SynodicMonth/ChebyKAN](https://github.com/SynodicMonth/ChebyKAN)           | [arXiv:2405.07200](https://arxiv.org/abs/2405.07200) |
+| `fasterkan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) | —                                                    |
+| `wavkan`       | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                     | [arXiv:2405.12832](https://arxiv.org/abs/2405.12832) |
+| `relukan`      | [quiqi/relu_kan](https://github.com/quiqi/relu_kan)                         | [arXiv:2406.02075](https://arxiv.org/abs/2406.02075) |
