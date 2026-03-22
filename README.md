@@ -41,18 +41,18 @@ uv run jupyter notebook notebooks/
 
 This section define the datasets from the foundational KAN paper (https://arxiv.org/abs/2404.19756): 5 toy datasets (Section 3.1) and 5 Feynman equations (Section 3.3).
 
-| #   | Name                | Formula                                                 | Variables                         | KAN Shape    |
-| --- | ------------------- | ------------------------------------------------------- | --------------------------------- | ------------ |
-| 1   | **Bessel**          | `f(x) = J₀(20x)`                                        | x                                 | [1, 1]       |
-| 2   | **ExpSin**          | `f(x,y) = exp(sin(πx) + y²)`                            | x, y                              | [2, 1, 1]    |
-| 3   | **Multiplication**  | `f(x,y) = xy`                                           | x, y                              | [2, 2, 1]    |
-| 4   | **HighDim**         | `f(x₁..x₁₀₀) = exp(1/100 · Σ sin²(πxᵢ/2))`              | x₁..x₁₀₀                          | [100, 1, 1]  |
-| 5   | **DeepFormula**     | `f(x₁..x₄) = exp(½(sin(π(x₁²+x₂²)) + sin(π(x₃²+x₄²))))` | x₁..x₄                            | [4, 4, 2, 1] |
-| 6   | **Feynman I.6.2**   | `f(θ,σ) = exp(-θ²/(2σ²)) / √(2πσ²)`                     | θ, σ                              | [2, 2, 1]    |
-| 7   | **Feynman I.6.2b**  | `f(θ,θ₁,σ) = exp(-(θ-θ₁)²/(2σ²)) / √(2πσ²)`             | θ, θ₁, σ                          | [3, 2, 1, 1] |
-| 8   | **Feynman I.9.18**  | `f = Gm₁m₂ / ((x₂-x₁)²+(y₂-y₁)²+(z₂-z₁)²)`              | G, m₁, m₂, x₁, x₂, y₁, y₂, z₁, z₂ | [6, 4, 1, 1] |
-| 9   | **Feynman I.12.11** | `f = q(Ef + Bv·sinθ)`                                   | q, Ef, B, v, θ                    | [2, 2, 1]    |
-| 10  | **Feynman I.13.12** | `f = Gm₁m₂(1/r₂ - 1/r₁)`                                | G, m₁, m₂, r₁, r₂                 | [2, 2, 1]    |
+| #   | Name                | Formula                                                 | Variables                         | KAN Shape       |
+| --- | ------------------- | ------------------------------------------------------- | --------------------------------- | --------------- |
+| 1   | **Bessel**          | `f(x) = J₀(20x)`                                        | x                                 | [1, 1]          |
+| 2   | **ExpSin**          | `f(x,y) = exp(sin(πx) + y²)`                            | x, y                              | [2, 1, 1]       |
+| 3   | **Multiplication**  | `f(x,y) = xy`                                           | x, y                              | [2, 2, 1]       |
+| 4   | **HighDim**         | `f(x₁..x₁₀₀) = exp(1/100 · Σ sin²(πxᵢ/2))`              | x₁..x₁₀₀                          | [100, 1, 1]     |
+| 5   | **DeepFormula**     | `f(x₁..x₄) = exp(½(sin(π(x₁²+x₂²)) + sin(π(x₃²+x₄²))))` | x₁..x₄                            | [4, 4, 2, 1]    |
+| 6   | **Feynman I.6.2**   | `f(θ,σ) = exp(-θ²/(2σ²)) / √(2πσ²)`                     | θ, σ                              | [2, 2, 1, 1]    |
+| 7   | **Feynman I.6.2b**  | `f(θ,θ₁,σ) = exp(-(θ-θ₁)²/(2σ²)) / √(2πσ²)`             | θ, θ₁, σ                          | [3, 2, 2, 1, 1] |
+| 8   | **Feynman I.9.18**  | `f = Gm₁m₂ / ((x₂-x₁)²+(y₂-y₁)²+(z₂-z₁)²)`              | G, m₁, m₂, x₁, x₂, y₁, y₂, z₁, z₂ | [6, 4, 2, 1, 1] |
+| 9   | **Feynman I.12.11** | `f = q(Ef + Bv·sinθ)`                                   | q, Ef, B, v, θ                    | [2, 2, 2, 1]    |
+| 10  | **Feynman I.13.12** | `f = Gm₁m₂(1/r₂ - 1/r₁)`                                | G, m₁, m₂, r₁, r₂                 | [2, 2, 1]       |
 
 ## Modules
 

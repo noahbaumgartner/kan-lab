@@ -1,6 +1,6 @@
 _target_: src.models.fast_kan_model.FastKANModel
-n_hidden_layers: 1
-hidden_width: 5
+n_hidden_layers: ${dataset.n_hidden}
+hidden_width: ${dataset.hidden_width_min}
 layers_hidden: ${make_width:${dataset.input_dim},${dataset.output_dim},${model.n_hidden_layers},${model.hidden_width}}
 grid_min: -2.0
 grid_max: 2.0

@@ -5,5 +5,10 @@ n_test: 100
 # metadata for width construction (not passed to __init__)
 input_dim: 2
 output_dim: 1
-hidden_width_min: 2
-hidden_width_max: 20
+
+# paper shape: [2, 2, 1] — 1 hidden layer, width 2
+n_hidden: 1
+n_hidden_min: 0
+n_hidden_max: 2
+hidden_width_min: 1
+hidden_width_max: 4
