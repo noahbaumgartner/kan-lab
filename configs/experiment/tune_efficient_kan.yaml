@@ -4,8 +4,6 @@ defaults:
   - override /model: efficient_kan
   - override /training: adam
 
-experiment_name: tune-efficient-kan
-
 hydra:
   sweeper:
     params:

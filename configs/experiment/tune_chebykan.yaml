@@ -4,8 +4,6 @@ defaults:
   - override /model: chebykan
   - override /training: adam
 
-experiment_name: tune-chebykan
-
 hydra:
   sweeper:
     params:

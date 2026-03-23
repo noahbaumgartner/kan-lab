@@ -25,7 +25,7 @@ class Trainer:
 
         # setup MLflow
         mlflow.set_tracking_uri(cfg.get("mlflow_tracking_uri", "mlruns"))
-        mlflow.set_experiment(_build_experiment_name(cfg))
+        mlflow.set_experiment(cfg.get("experiment_name", "kan-lab"))
 
         with mlflow.start_run(run_name=_generate_run_name(cfg)):
             # log config parameters
@@ -34,6 +34,7 @@ class Trainer:
             mlflow.log_param("parameter_count", model.parameter_count())
             mlflow.log_param("dataset", _get_dataset_name(cfg))
             mlflow.log_param("model", _get_model_name(cfg))
+            mlflow.log_param("shape", _get_shape(cfg))
 
             # train
             t_start = time.time()
@@ -63,18 +64,6 @@ class Trainer:
             mlflow.log_metric("training_time_sec", train_time)
 
         return results
-
-
-_experiment_name_cache = None
-
-
-def _build_experiment_name(cfg):
-    global _experiment_name_cache
-    if _experiment_name_cache is None:
-        base_name = cfg.get("experiment_name", "kan-lab")
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        _experiment_name_cache = f"{base_name}_{timestamp}"
-    return _experiment_name_cache
 
 
 _ADJECTIVES = [
@@ -133,6 +122,11 @@ def _get_model_name(cfg):
 def _get_dataset_name(cfg):
     dataset_class = cfg.dataset.get("_target_", "unknown")
     return dataset_class.rsplit(".", 1)[-1].replace("Dataset", "")
+
+
+def _get_shape(cfg):
+    model_cfg = OmegaConf.to_container(cfg.model, resolve=True)
+    return str(model_cfg.get("width") or model_cfg.get("layers_hidden", "unknown"))
 
 
 def _flatten_dict(d, parent_key="", sep="."):

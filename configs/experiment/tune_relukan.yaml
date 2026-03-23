@@ -4,8 +4,6 @@ defaults:
   - override /model: relukan
   - override /training: adam
 
-experiment_name: tune-relukan
-
 hydra:
   sweeper:
     params:

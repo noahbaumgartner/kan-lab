@@ -4,8 +4,6 @@ defaults:
   - override /model: faster_kan
   - override /training: adam
 
-experiment_name: tune-faster-kan
-
 hydra:
   sweeper:
     params:

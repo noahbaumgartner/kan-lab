@@ -4,8 +4,6 @@ defaults:
   - override /model: mlp
   - override /training: default
 
-experiment_name: tune-mlp
-
 hydra:
   sweeper:
     params:

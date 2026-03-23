@@ -4,8 +4,6 @@ defaults:
   - override /model: pykan
   - override /training: default
 
-experiment_name: tune-pykan
-
 hydra:
   sweeper:
     params:
