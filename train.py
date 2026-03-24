@@ -1,3 +1,5 @@
+import math
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -17,7 +19,8 @@ OmegaConf.register_new_resolver(
 def main(cfg: DictConfig) -> float:
     trainer = instantiate(cfg.trainer, cfg=cfg, _recursive_=False)
     results = trainer.train()
-    return float(results["test_loss"][-1])
+    final_loss = float(results["test_loss"][-1])
+    return final_loss if math.isfinite(final_loss) else 1e10
 
 
 if __name__ == "__main__":
