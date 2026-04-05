@@ -6,3 +6,5 @@ grid: 5
 k: 3
 base_fun: silu
 seed: 1
+grid_refinement_schedule: null
+grid_refinement_steps: 200

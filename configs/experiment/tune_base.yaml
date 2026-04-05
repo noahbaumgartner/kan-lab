@@ -3,10 +3,10 @@ defaults:
   - override /hydra/sweeper: optuna
   - override /hydra/sweeper/sampler: tpe
 
-experiment_name: tune-1
+experiment_name: tune-3
 
 training:
-  steps: 100
+  steps: 1400
 
 hydra:
   sweeper:
