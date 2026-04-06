@@ -1,4 +1,5 @@
 import sys
+import torch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "modules" / "wavkan"))
@@ -18,3 +19,20 @@ class WavKANModel(BaseKANModel):
             wavelet_type=self.wavelet_type,
         ).to(device)
         self.device = device
+
+        # Disable BatchNorm (destroys scale for regression) and
+        # enable linear residual path for gradient flow
+        for layer in self.model.layers:
+            layer.bn = torch.nn.Identity()
+            layer.use_base = True
+
+        # Patch forward to include base_output residual
+        import types
+        def _forward_with_residual(self, x):
+            wavelet_output = self.wavelet_transform(x)
+            base_output = torch.nn.functional.linear(x, self.weight1)
+            combined_output = wavelet_output + base_output
+            return self.bn(combined_output)
+
+        for layer in self.model.layers:
+            layer.forward = types.MethodType(_forward_with_residual, layer)
