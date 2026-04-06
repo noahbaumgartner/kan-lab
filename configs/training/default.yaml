@@ -1,6 +1,6 @@
 optimizer: LBFGS
 steps: 100
-lr: 1.0
+lr: 1
 batch_size: -1
 lamb: 0.001
 device: cpu

@@ -6,6 +6,7 @@ import torch
 import mlflow
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
+from tqdm import tqdm
 
 
 class Trainer:
@@ -22,7 +23,7 @@ class Trainer:
         self, model, dataset, loss_fn, task_type, steps, lr, optimizer, batch_size, lamb
     ):
         if optimizer == "Adam":
-            opt = torch.optim.Adam(model.get_model().parameters(), lr=lr)
+            opt = torch.optim.AdamW(model.get_model().parameters(), lr=lr)
         elif optimizer == "LBFGS":
             opt = torch.optim.LBFGS(model.get_model().parameters(), lr=lr)
         else:
@@ -33,7 +34,8 @@ class Trainer:
             results["train_acc"] = []
             results["test_acc"] = []
 
-        for _ in range(steps):
+        pbar = tqdm(range(steps), desc="Training")
+        for _ in pbar:
             n_train = dataset["train_input"].shape[0]
             if batch_size == -1 or batch_size >= n_train:
                 x = dataset["train_input"]
@@ -92,6 +94,9 @@ class Trainer:
                     )
                 results["train_acc"].append(train_acc)
                 results["test_acc"].append(test_acc)
+                pbar.set_postfix(loss=f"{test_loss_val:.4f}", acc=f"{test_acc:.4f}")
+            else:
+                pbar.set_postfix(rmse=f"{test_loss_val ** 0.5:.4f}")
 
         return results
 
@@ -136,6 +141,7 @@ class Trainer:
                     loss_fn=loss_fn,
                     batch_size=cfg.training.get("batch_size", -1),
                     lamb=cfg.training.get("lamb", 0.0),
+                    task_type=task_type,
                 )
             else:
                 results = self._run_training(
