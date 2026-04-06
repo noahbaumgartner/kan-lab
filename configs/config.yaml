@@ -2,7 +2,7 @@ hydra:
   run:
     dir: .
 
-experiment_name: kan-lab
+experiment_name: experiment
 mlflow_tracking_uri: sqlite:///mlflow.db
 
 trainer:

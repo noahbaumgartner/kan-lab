@@ -1,0 +1,15 @@
+_target_: src.datasets.mnist.MNISTDataset
+n_train: 60000
+n_test: 10000
+
+task_type: classification
+
+# metadata for width construction
+input_dim: 784
+output_dim: 10
+
+n_hidden: 1
+n_hidden_min: 1
+n_hidden_max: 2
+hidden_width_min: 64
+hidden_width_max: 128
