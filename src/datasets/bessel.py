@@ -1,23 +1,26 @@
 import torch
 from scipy.special import j0
 
+from src.datasets.base import create_dataset
+
 
 class BesselDataset:
     input_dim = 1
     output_dim = 1
+
+    f = staticmethod(lambda x: j0(20 * x[:, 0]))
 
     def __init__(self, n_train=1000, n_test=100, **kwargs):
         self.n_train = n_train
         self.n_test = n_test
 
     def create(self, device="cpu"):
-        train_input = torch.rand(self.n_train, 1, device=device) * 2 - 1
-        test_input = torch.rand(self.n_test, 1, device=device) * 2 - 1
-        train_label = torch.tensor(j0(20 * train_input.cpu().numpy()), dtype=torch.float32, device=device)
-        test_label = torch.tensor(j0(20 * test_input.cpu().numpy()), dtype=torch.float32, device=device)
-        return {
-            "train_input": train_input,
-            "train_label": train_label,
-            "test_input": test_input,
-            "test_label": test_label,
-        }
+        dataset = create_dataset(
+            self.f,
+            n_var=self.input_dim,
+            train_num=self.n_train,
+            test_num=self.n_test,
+            ranges=[-1, 1],
+            device=device,
+        )
+        return dataset

@@ -1,20 +1,79 @@
-DATASET_REGISTRY = {}
+import numpy as np
+import torch
 
 
-def register_dataset(name):
-    """Decorator to register a dataset factory function."""
+def create_dataset(
+    f,
+    n_var=2,
+    f_mode="col",
+    ranges=[-1, 1],
+    train_num=1000,
+    test_num=1000,
+    normalize_input=False,
+    normalize_label=False,
+    device="cpu",
+    seed=0,
+):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
 
-    def wrapper(fn):
-        DATASET_REGISTRY[name] = fn
-        return fn
+    if len(np.array(ranges).shape) == 1:
+        ranges = np.array(ranges * n_var).reshape(n_var, 2)
+    else:
+        ranges = np.array(ranges)
 
-    return wrapper
+    train_input = torch.zeros(train_num, n_var)
+    test_input = torch.zeros(test_num, n_var)
+    for i in range(n_var):
+        train_input[:, i] = (
+            torch.rand(
+                train_num,
+            )
+            * (ranges[i, 1] - ranges[i, 0])
+            + ranges[i, 0]
+        )
+        test_input[:, i] = (
+            torch.rand(
+                test_num,
+            )
+            * (ranges[i, 1] - ranges[i, 0])
+            + ranges[i, 0]
+        )
 
+    if f_mode == "col":
+        train_label = f(train_input)
+        test_label = f(test_input)
+    elif f_mode == "row":
+        train_label = f(train_input.T)
+        test_label = f(test_input.T)
+    else:
+        print(f"f_mode {f_mode} not recognized")
 
-def create_dataset(cfg, device="cpu"):
-    """Create a pykan-format dataset dict from Hydra config."""
-    name = cfg.dataset.name
-    if name not in DATASET_REGISTRY:
-        available = list(DATASET_REGISTRY.keys())
-        raise ValueError(f"Unknown dataset: {name}. Available: {available}")
-    return DATASET_REGISTRY[name](cfg.dataset, device=device)
+    # if has only 1 dimension
+    if len(train_label.shape) == 1:
+        train_label = train_label.unsqueeze(dim=1)
+        test_label = test_label.unsqueeze(dim=1)
+
+    def normalize(data, mean, std):
+        return (data - mean) / std
+
+    if normalize_input == True:
+        mean_input = torch.mean(train_input, dim=0, keepdim=True)
+        std_input = torch.std(train_input, dim=0, keepdim=True)
+        train_input = normalize(train_input, mean_input, std_input)
+        test_input = normalize(test_input, mean_input, std_input)
+
+    if normalize_label == True:
+        mean_label = torch.mean(train_label, dim=0, keepdim=True)
+        std_label = torch.std(train_label, dim=0, keepdim=True)
+        train_label = normalize(train_label, mean_label, std_label)
+        test_label = normalize(test_label, mean_label, std_label)
+
+    dataset = {}
+    dataset["train_input"] = train_input.to(device)
+    dataset["test_input"] = test_input.to(device)
+
+    dataset["train_label"] = train_label.to(device)
+    dataset["test_label"] = test_label.to(device)
+
+    return dataset

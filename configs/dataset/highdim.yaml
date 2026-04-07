@@ -2,6 +2,8 @@ _target_: src.datasets.highdim.HighDimDataset
 n_train: 1000
 n_test: 100
 
+task_type: regression
+
 # metadata for width construction (not passed to __init__)
 input_dim: 100
 output_dim: 1
