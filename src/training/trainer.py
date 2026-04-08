@@ -6,7 +6,6 @@ import torch
 import mlflow
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
-from tqdm import tqdm
 
 
 class Trainer:
@@ -18,87 +17,6 @@ class Trainer:
         if task_type == "classification":
             return torch.nn.CrossEntropyLoss()
         return lambda pred, target: torch.mean((pred - target) ** 2)
-
-    def _run_training(
-        self, model, dataset, loss_fn, task_type, steps, lr, optimizer, batch_size, lamb
-    ):
-        if optimizer == "Adam":
-            opt = torch.optim.AdamW(model.get_model().parameters(), lr=lr)
-        elif optimizer == "LBFGS":
-            opt = torch.optim.LBFGS(model.get_model().parameters(), lr=lr)
-        else:
-            raise ValueError(f"Unsupported optimizer: {optimizer}")
-
-        results = {"train_loss": [], "test_loss": [], "reg": []}
-        if task_type == "classification":
-            results["train_acc"] = []
-            results["test_acc"] = []
-
-        pbar = tqdm(range(steps), desc="Training")
-        for _ in pbar:
-            n_train = dataset["train_input"].shape[0]
-            if batch_size == -1 or batch_size >= n_train:
-                x = dataset["train_input"]
-                y = dataset["train_label"]
-            else:
-                idx = torch.randperm(n_train, device=model.device)[:batch_size]
-                x = dataset["train_input"][idx]
-                y = dataset["train_label"][idx]
-
-            if optimizer == "LBFGS":
-
-                def closure():
-                    opt.zero_grad()
-                    pred = model.predict(x)
-                    loss = loss_fn(pred, y)
-                    reg = model.regularization_loss()
-                    if reg > 0:
-                        loss = loss + lamb * reg
-                    loss.backward()
-                    return loss
-
-                opt.step(closure)
-            else:
-                opt.zero_grad()
-                pred = model.predict(x)
-                loss = loss_fn(pred, y)
-                reg = model.regularization_loss()
-                if reg > 0:
-                    loss = loss + lamb * reg
-                loss.backward()
-                opt.step()
-
-            with torch.no_grad():
-                train_pred = model.predict(dataset["train_input"])
-                train_loss_val = loss_fn(train_pred, dataset["train_label"]).item()
-                test_pred = model.predict(dataset["test_input"])
-                test_loss_val = loss_fn(test_pred, dataset["test_label"]).item()
-
-            results["train_loss"].append(train_loss_val)
-            results["test_loss"].append(test_loss_val)
-            results["reg"].append(0.0)
-
-            if task_type == "classification":
-                with torch.no_grad():
-                    train_acc = (
-                        (train_pred.argmax(dim=1) == dataset["train_label"])
-                        .float()
-                        .mean()
-                        .item()
-                    )
-                    test_acc = (
-                        (test_pred.argmax(dim=1) == dataset["test_label"])
-                        .float()
-                        .mean()
-                        .item()
-                    )
-                results["train_acc"].append(train_acc)
-                results["test_acc"].append(test_acc)
-                pbar.set_postfix(loss=f"{test_loss_val:.4f}", acc=f"{test_acc:.4f}")
-            else:
-                pbar.set_postfix(rmse=f"{test_loss_val ** 0.5:.4f}")
-
-        return results
 
     def train(self):
         cfg = self.cfg
@@ -131,30 +49,16 @@ class Trainer:
             # train
             t_start = time.time()
 
-            if hasattr(model, "fit"):
-                # PyKAN has its own training loop
-                results = model.fit(
-                    dataset=dataset,
-                    steps=cfg.training.steps,
-                    lr=cfg.training.lr,
-                    optimizer=cfg.training.optimizer,
-                    loss_fn=loss_fn,
-                    batch_size=cfg.training.get("batch_size", -1),
-                    lamb=cfg.training.get("lamb", 0.0),
-                    task_type=task_type,
-                )
-            else:
-                results = self._run_training(
-                    model=model,
-                    dataset=dataset,
-                    loss_fn=loss_fn,
-                    task_type=task_type,
-                    steps=cfg.training.steps,
-                    lr=cfg.training.lr,
-                    optimizer=cfg.training.optimizer,
-                    batch_size=cfg.training.get("batch_size", -1),
-                    lamb=cfg.training.get("lamb", 0.0),
-                )
+            results = model.fit(
+                dataset=dataset,
+                steps=cfg.training.steps,
+                lr=cfg.training.lr,
+                optimizer=cfg.training.optimizer,
+                loss_fn=loss_fn,
+                batch_size=cfg.training.get("batch_size", -1),
+                lamb=cfg.training.get("lamb", 0.0),
+                task_type=task_type,
+            )
 
             train_time = time.time() - t_start
 
@@ -187,10 +91,10 @@ class Trainer:
                     zip(results["train_loss"], results["test_loss"])
                 ):
                     train_rmse = (
-                        float(tl) ** 0.5 if not hasattr(model, "fit") else float(tl)
+                        float(tl) if model.reports_rmse else float(tl) ** 0.5
                     )
                     test_rmse = (
-                        float(vl) ** 0.5 if not hasattr(model, "fit") else float(vl)
+                        float(vl) if model.reports_rmse else float(vl) ** 0.5
                     )
                     mlflow.log_metrics(
                         {"train_rmse": train_rmse, "test_rmse": test_rmse},
@@ -199,7 +103,7 @@ class Trainer:
 
                 final_train = float(results["train_loss"][-1])
                 final_test = float(results["test_loss"][-1])
-                if not hasattr(model, "fit"):
+                if not model.reports_rmse:
                     final_train = final_train**0.5
                     final_test = final_test**0.5
                 mlflow.log_metric("final_train_rmse", final_train)
