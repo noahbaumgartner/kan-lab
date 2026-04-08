@@ -5,16 +5,16 @@ from modules.efficientkan.src.efficient_kan import KAN
 
 
 class EfficientKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, grid_size=5, spline_order=3, **kwargs):
+    def __init__(self, layers_hidden, grid=5, k=3, **kwargs):
         self.layers_hidden = layers_hidden
-        self.grid_size = grid_size
-        self.spline_order = spline_order
+        self.grid = grid
+        self.k = k
 
     def build(self, device="cpu"):
         self.model = KAN(
             layers_hidden=list(self.layers_hidden),
-            grid_size=self.grid_size,
-            spline_order=self.spline_order,
+            grid=self.grid,
+            spline_order=self.k,
         ).to(device)
         self.device = device
 

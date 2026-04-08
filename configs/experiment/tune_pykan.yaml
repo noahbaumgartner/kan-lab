@@ -3,15 +3,15 @@ defaults:
   - tune_base
   - override /model: pykan
   - override /training: default
-  - override /dataset: bessel
 
 model:
-  grid_refinement_schedule: [3, 5, 10, 20, 50, 100, 200]
-  grid_refinement_steps: 200
+  grid_refinement_schedule: [50]
+  grid_refinement_steps: 1500
   k: 3
 
 hydra:
   sweeper:
     params:
-      # pykan with LBFGS is stable here; below 0.01 converges too slowly
-      training.lr: tag(log, interval(0.01, 1.0))
+      # wider LR range to cover both Adam (low) and LBFGS (high)
+      training.lr: tag(log, interval(0.001, 1.0))
+      training.optimizer: choice(Adam, LBFGS)
