@@ -1,6 +1,7 @@
 optimizer: LBFGS
-steps: 100
+epochs: 100
 lr: 1
+lr_gamma: 1.0
 batch_size: -1
 lamb: 0.001
 device: cpu

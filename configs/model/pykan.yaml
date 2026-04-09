@@ -2,9 +2,5 @@ _target_: src.models.pykan_model.PyKANModel
 n_hidden_layers: ${dataset.n_hidden}
 hidden_width: ${dataset.hidden_width_min}
 width: ${make_width:${dataset.input_dim},${dataset.output_dim},${model.n_hidden_layers},${model.hidden_width}}
-grid: 5
 k: 3
 base_fun: silu
-seed: 1
-grid_refinement_schedule: null
-grid_refinement_steps: 200

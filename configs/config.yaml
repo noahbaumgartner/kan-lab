@@ -3,6 +3,7 @@ hydra:
     dir: .
 
 experiment_name: experiment
+seed: 42
 mlflow_tracking_uri: sqlite:///mlflow.db
 
 trainer:

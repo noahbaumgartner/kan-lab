@@ -2,6 +2,7 @@ import random
 import time
 from datetime import datetime
 
+import numpy as np
 import torch
 import mlflow
 from hydra.utils import instantiate
@@ -18,9 +19,20 @@ class Trainer:
             return torch.nn.CrossEntropyLoss()
         return lambda pred, target: torch.mean((pred - target) ** 2)
 
+    @staticmethod
+    def _seed_everything(seed: int):
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+
     def train(self):
         cfg = self.cfg
         task_type = cfg.dataset.get("task_type", "regression")
+
+        # global seed
+        self._seed_everything(cfg.get("seed", 42))
 
         # load dataset
         dataset_obj = instantiate(cfg.dataset)
@@ -51,13 +63,14 @@ class Trainer:
 
             results = model.fit(
                 dataset=dataset,
-                steps=cfg.training.steps,
+                epochs=cfg.training.epochs,
                 lr=cfg.training.lr,
                 optimizer=cfg.training.optimizer,
                 loss_fn=loss_fn,
                 batch_size=cfg.training.get("batch_size", -1),
                 lamb=cfg.training.get("lamb", 0.0),
                 task_type=task_type,
+                lr_gamma=cfg.training.get("lr_gamma", 1.0),
             )
 
             train_time = time.time() - t_start

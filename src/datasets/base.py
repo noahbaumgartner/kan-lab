@@ -12,10 +12,11 @@ def create_dataset(
     normalize_input=False,
     normalize_label=False,
     device="cpu",
-    seed=0,
+    seed=None,
 ):
-    np.random.seed(seed)
-    torch.manual_seed(seed)
+    if seed is not None:
+        np.random.seed(seed)
+        torch.manual_seed(seed)
 
     if len(np.array(ranges).shape) == 1:
         ranges = np.array(ranges * n_var).reshape(n_var, 2)

@@ -1,22 +1,142 @@
 import torch
+from torch.utils.data import DataLoader, TensorDataset
+from tqdm import tqdm
 
 from .base import BaseKANModel
 from modules.efficientkan.src.efficient_kan import KAN
 
 
 class EfficientKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, grid=5, k=3, **kwargs):
+    def __init__(self, layers_hidden, grid=5, k=3, grid_update_freq=10, **kwargs):
         self.layers_hidden = layers_hidden
         self.grid = grid
         self.k = k
+        self.grid_update_freq = grid_update_freq
 
     def build(self, device="cpu"):
         self.model = KAN(
             layers_hidden=list(self.layers_hidden),
-            grid=self.grid,
+            grid_size=self.grid,
             spline_order=self.k,
         ).to(device)
         self.device = device
 
+    def predict(self, x, update_grid=False):
+        if update_grid and self.device == "mps":
+            self.model.cpu()
+            self.model(x.cpu(), update_grid=True)
+            self.model.to(self.device)
+            return self.model(x)
+        return self.model(x, update_grid=update_grid)
+
     def regularization_loss(self):
         return self.model.regularization_loss()
+
+    def fit(
+        self,
+        dataset,
+        epochs,
+        lr,
+        optimizer,
+        loss_fn,
+        batch_size,
+        lamb,
+        task_type="regression",
+        **kwargs,
+    ):
+        lr_gamma = kwargs.get("lr_gamma", 1.0)
+
+        train_ds = TensorDataset(dataset["train_input"], dataset["train_label"])
+        val_ds = TensorDataset(dataset["test_input"], dataset["test_label"])
+
+        n_train = len(train_ds)
+        bs = n_train if (batch_size == -1 or batch_size >= n_train) else batch_size
+
+        train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)
+        val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False)
+
+        if optimizer in ("Adam", "AdamW"):
+            opt_cls = torch.optim.AdamW if optimizer == "AdamW" else torch.optim.Adam
+            opt = opt_cls(self.get_model().parameters(), lr=lr)
+            scheduler = torch.optim.lr_scheduler.ExponentialLR(opt, gamma=lr_gamma)
+        elif optimizer == "LBFGS":
+            opt = torch.optim.LBFGS(self.get_model().parameters(), lr=lr)
+            scheduler = None
+        else:
+            raise ValueError(f"Unsupported optimizer: {optimizer}")
+
+        results = {"train_loss": [], "test_loss": [], "reg": []}
+        if task_type == "classification":
+            results["train_acc"] = []
+            results["test_acc"] = []
+
+        for epoch in tqdm(range(epochs), desc="Training"):
+            # --- Train ---
+            self.get_model().train()
+            for i, (x, y) in enumerate(train_loader):
+                x, y = x.to(self.device), y.to(self.device)
+
+                # periodic grid update
+                update_grid = (epoch % self.grid_update_freq == 0 and i == 0)
+
+                if optimizer == "LBFGS":
+                    def closure():
+                        opt.zero_grad()
+                        pred = self.predict(x, update_grid=update_grid)
+                        loss = loss_fn(pred, y)
+                        reg = self.regularization_loss()
+                        if reg > 0:
+                            loss = loss + lamb * reg
+                        loss.backward()
+                        return loss
+                    opt.step(closure)
+                else:
+                    opt.zero_grad()
+                    pred = self.predict(x, update_grid=update_grid)
+                    loss = loss_fn(pred, y)
+                    reg = self.regularization_loss()
+                    if reg > 0:
+                        loss = loss + lamb * reg
+                    loss.backward()
+                    opt.step()
+
+            if scheduler is not None:
+                scheduler.step()
+
+            # --- Validate ---
+            self.get_model().eval()
+            train_mse = 0.0
+            train_total = 0
+            train_correct = 0
+            with torch.no_grad():
+                for x, y in train_loader:
+                    x, y = x.to(self.device), y.to(self.device)
+                    pred = self.predict(x)
+                    train_mse += loss_fn(pred, y).item() * x.shape[0]
+                    if task_type == "classification":
+                        train_correct += (pred.argmax(dim=1) == y).sum().item()
+                    train_total += x.shape[0]
+            train_mse /= train_total
+
+            val_mse = 0.0
+            val_total = 0
+            val_correct = 0
+            with torch.no_grad():
+                for x, y in val_loader:
+                    x, y = x.to(self.device), y.to(self.device)
+                    pred = self.predict(x)
+                    val_mse += loss_fn(pred, y).item() * x.shape[0]
+                    if task_type == "classification":
+                        val_correct += (pred.argmax(dim=1) == y).sum().item()
+                    val_total += x.shape[0]
+            val_mse /= val_total
+
+            results["train_loss"].append(train_mse)
+            results["test_loss"].append(val_mse)
+            results["reg"].append(self.regularization_loss())
+
+            if task_type == "classification":
+                results["train_acc"].append(train_correct / train_total)
+                results["test_acc"].append(val_correct / val_total)
+
+        return results

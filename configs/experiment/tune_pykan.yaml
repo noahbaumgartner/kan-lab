@@ -5,13 +5,14 @@ defaults:
   - override /training: default
 
 model:
-  grid_refinement_schedule: [50]
-  grid_refinement_steps: 1500
   k: 3
 
 hydra:
   sweeper:
     params:
-      # wider LR range to cover both Adam (low) and LBFGS (high)
-      training.lr: tag(log, interval(0.001, 1.0))
       training.optimizer: choice(Adam, LBFGS)
+      training.lr: tag(log, interval(0.001, 1.0))
+      # Adam: exponential LR decay; LBFGS ignores this (no scheduler)
+      training.lr_gamma: interval(0.5, 1.0)
+      # LBFGS: regularization weight; Adam can also benefit from tuning this
+      training.lamb: tag(log, interval(1e-5, 0.1))

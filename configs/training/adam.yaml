@@ -1,6 +1,7 @@
 optimizer: Adam
-steps: 1000
-lr: 10e-3
+epochs: 1000
+lr: 1e-3
+lr_gamma: 0.8
 batch_size: 256
 lamb: 0.0
 device: mps

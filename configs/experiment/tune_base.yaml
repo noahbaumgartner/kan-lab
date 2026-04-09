@@ -3,24 +3,22 @@ defaults:
   - override /hydra/sweeper: optuna
   - override /hydra/sweeper/sampler: tpe
 
-experiment_name: tune-4
+experiment_name: tune-9
+seed: 42
 
 training:
-  steps: 1400
+  epochs: 1000
 
 hydra:
   sweeper:
     sampler:
-      seed: 123
+      seed: ${seed}
     direction: minimize
-    # enough trials for TPE to converge on ≤5 hyperparams
-    n_trials: 30
+
+    n_trials: 50
     n_jobs: 1
     params:
       # architecture bounds from dataset config (paper-informed per function)
       model.n_hidden_layers: range(${dataset.n_hidden_min}, ${dataset.n_hidden_max})
       model.hidden_width: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})
       # 0.001 is a common Adam lower bound, 1.0 is the LBFGS default
-      training.lr: tag(log, interval(0.001, 1.0))
-      # 0.0001 ≈ off, 0.1 = strong; pykan default is 0.001
-      training.lamb: tag(log, interval(0.0001, 0.1))

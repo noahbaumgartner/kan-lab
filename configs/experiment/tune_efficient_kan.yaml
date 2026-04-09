@@ -4,11 +4,11 @@ defaults:
   - override /model: efficient_kan
   - override /training: adam
 
+training.optimizer: Adam
+model.grid: 8
+
 hydra:
   sweeper:
     params:
-      # same spline resolution range as pykan (equivalent parameter)
-      model.grid: range(3, 51)
       # same spline order range as pykan (equivalent parameter)
       model.k: range(2, 6)
-      training.optimizer: choice(Adam, LBFGS)
