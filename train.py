@@ -1,4 +1,12 @@
 import math
+import sys
+from pathlib import Path
+
+# Ensure the project root is on sys.path so that "modules" and "src" are importable
+# regardless of the working directory Hydra switches to.
+_PROJECT_ROOT = str(Path(__file__).resolve().parent)
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 
 import matplotlib
 
