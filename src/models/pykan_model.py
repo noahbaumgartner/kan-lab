@@ -20,10 +20,8 @@ class PyKANModel(BaseKANModel):
         self.base_fun = base_fun
         self.model = None
 
-    def build(self, device="cpu", grid_range=None):
+    def build(self, device="cpu"):
         self.device = device
-        if grid_range is None:
-            grid_range = [-1, 1]
         self.model = KAN(
             width=list(self.width),
             grid=self.grid,
@@ -31,7 +29,6 @@ class PyKANModel(BaseKANModel):
             base_fun=self.base_fun,
             seed=0,
             device=device,
-            grid_range=grid_range,
         )
 
     def _make_metrics(self, dataset, task_type):

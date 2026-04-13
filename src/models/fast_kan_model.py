@@ -7,14 +7,11 @@ from modules.fastkan.fastkan import FastKAN, FastKANLayer
 class FastKANModel(BaseKANModel):
     def __init__(self, layers_hidden, num_grids=8, **kwargs):
         self.layers_hidden = layers_hidden
-        self.grid_min = -2.0
-        self.grid_max = 2.0
+        self.grid_min = -3.0
+        self.grid_max = 3.0
         self.num_grids = num_grids
 
-    def build(self, device="cpu", grid_range=None):
-        if grid_range is not None:
-            self.grid_min = grid_range[0]
-            self.grid_max = grid_range[1]
+    def build(self, device="cpu"):
         layers_hidden = list(self.layers_hidden)
         needs_custom = any(d == 1 for d in layers_hidden[:-1])
         if needs_custom:

@@ -11,7 +11,7 @@ class BaseKANModel(ABC):
     reports_rmse: bool = False
 
     @abstractmethod
-    def build(self, device: str = "cpu", grid_range: list = None) -> None:
+    def build(self, device: str = "cpu") -> None:
         """Construct the underlying model from config."""
 
     def regularization_loss(self) -> float:
@@ -38,8 +38,6 @@ class BaseKANModel(ABC):
         task_type="regression",
         **kwargs,
     ):
-        lr_gamma = kwargs.get("lr_gamma", 1.0)
-
         # Build DataLoaders
         train_ds = TensorDataset(dataset["train_input"], dataset["train_label"])
         val_ds = TensorDataset(dataset["test_input"], dataset["test_label"])
@@ -53,10 +51,8 @@ class BaseKANModel(ABC):
         # Optimizer
         if optimizer == "Adam":
             opt = torch.optim.Adam(self.get_model().parameters(), lr=lr)
-            scheduler = torch.optim.lr_scheduler.ExponentialLR(opt, gamma=lr_gamma)
         elif optimizer == "LBFGS":
             opt = torch.optim.LBFGS(self.get_model().parameters(), lr=lr)
-            scheduler = None
         else:
             raise ValueError(f"Unsupported optimizer: {optimizer}")
 
@@ -93,9 +89,6 @@ class BaseKANModel(ABC):
                         loss = loss + lamb * reg
                     loss.backward()
                     opt.step()
-
-            if scheduler is not None:
-                scheduler.step()
 
             # --- Validate ---
             self.get_model().eval()

@@ -6,7 +6,6 @@ from kan.utils import create_dataset
 class BesselDataset:
     input_dim = 1
     output_dim = 1
-    ranges = [-1, 1]
 
     f = staticmethod(lambda x: j0(20 * x[:, 0]))
 
@@ -21,5 +20,7 @@ class BesselDataset:
             ranges=[-1, 1],
             train_num=self.n_train,
             test_num=self.n_test,
+            normalize_input=True,
+            normalize_label=True,
             device=device,
         )

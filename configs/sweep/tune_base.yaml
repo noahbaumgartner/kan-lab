@@ -7,7 +7,7 @@ experiment_name: tune-9
 seed: 42
 
 training:
-  epochs: 2000
+  epochs: 100
 
 hydra:
   sweeper:
@@ -15,7 +15,7 @@ hydra:
       seed: ${seed}
     direction: minimize
 
-    n_trials: 50
+    n_trials: 100
     n_jobs: 1
     params:
       # architecture bounds from dataset config (paper-informed per function)

@@ -23,5 +23,7 @@ class FeynmanDataset:
             ranges=self.ranges,
             train_num=self.n_train,
             test_num=self.n_test,
+            normalize_input=True,
+            normalize_label=True,
             device=device,
         )

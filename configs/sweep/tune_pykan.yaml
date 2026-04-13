@@ -4,15 +4,10 @@ defaults:
   - override /model: pykan
   - override /training: default
 
-model:
-  k: 3
-
 hydra:
   sweeper:
     params:
+      model.grid: range(3, 51)
       training.optimizer: choice(Adam, LBFGS)
       training.lr: tag(log, interval(0.001, 1.0))
-      # Adam: exponential LR decay; LBFGS ignores this (no scheduler)
-      training.lr_gamma: interval(0.5, 1.0)
-      # LBFGS: regularization weight; Adam can also benefit from tuning this
       training.lamb: tag(log, interval(1e-5, 0.1))

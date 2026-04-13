@@ -7,20 +7,18 @@ from modules.efficientkan.src.efficient_kan import KAN
 
 
 class EfficientKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, grid=5, k=3, grid_update_freq=10, **kwargs):
+    def __init__(self, layers_hidden, grid_size=5, k=3, grid_update_freq=10, **kwargs):
         self.layers_hidden = layers_hidden
-        self.grid = grid
+        self.grid_size = grid_size
         self.k = k
         self.grid_update_freq = grid_update_freq
 
-    def build(self, device="cpu", grid_range=None):
-        if grid_range is None:
-            grid_range = [-1, 1]
+    def build(self, device="cpu"):
         self.model = KAN(
             layers_hidden=list(self.layers_hidden),
-            grid_size=self.grid,
+            grid_size=self.grid_size,
             spline_order=self.k,
-            grid_range=grid_range,
+            grid_range=[-3, 3],
         ).to(device)
         self.device = device
 
@@ -47,8 +45,6 @@ class EfficientKANModel(BaseKANModel):
         task_type="regression",
         **kwargs,
     ):
-        lr_gamma = kwargs.get("lr_gamma", 1.0)
-
         train_ds = TensorDataset(dataset["train_input"], dataset["train_label"])
         val_ds = TensorDataset(dataset["test_input"], dataset["test_label"])
 
@@ -61,10 +57,8 @@ class EfficientKANModel(BaseKANModel):
         if optimizer in ("Adam", "AdamW"):
             opt_cls = torch.optim.AdamW if optimizer == "AdamW" else torch.optim.Adam
             opt = opt_cls(self.get_model().parameters(), lr=lr)
-            scheduler = torch.optim.lr_scheduler.ExponentialLR(opt, gamma=lr_gamma)
         elif optimizer == "LBFGS":
             opt = torch.optim.LBFGS(self.get_model().parameters(), lr=lr)
-            scheduler = None
         else:
             raise ValueError(f"Unsupported optimizer: {optimizer}")
 
@@ -80,9 +74,10 @@ class EfficientKANModel(BaseKANModel):
                 x, y = x.to(self.device), y.to(self.device)
 
                 # periodic grid update
-                update_grid = (epoch % self.grid_update_freq == 0 and i == 0)
+                update_grid = epoch % self.grid_update_freq == 0 and i == 0
 
                 if optimizer == "LBFGS":
+
                     def closure():
                         opt.zero_grad()
                         pred = self.predict(x, update_grid=update_grid)
@@ -92,6 +87,7 @@ class EfficientKANModel(BaseKANModel):
                             loss = loss + lamb * reg
                         loss.backward()
                         return loss
+
                     opt.step(closure)
                 else:
                     opt.zero_grad()
@@ -102,9 +98,6 @@ class EfficientKANModel(BaseKANModel):
                         loss = loss + lamb * reg
                     loss.backward()
                     opt.step()
-
-            if scheduler is not None:
-                scheduler.step()
 
             # --- Validate ---
             self.get_model().eval()
