@@ -1,4 +1,5 @@
-_target_: src.datasets.feynman_i_12_11.FeynmanI1211Dataset
+_target_: src.datasets.feynman.FeynmanDataset
+name: "I.12.11"
 n_train: 1000
 n_test: 100
 

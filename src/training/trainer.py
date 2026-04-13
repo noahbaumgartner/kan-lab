@@ -38,9 +38,16 @@ class Trainer:
         dataset_obj = instantiate(cfg.dataset)
         dataset = dataset_obj.create(device=self.device)
 
+        # compute grid range from dataset ranges
+        ranges = getattr(dataset_obj, "ranges", [-1, 1])
+        if isinstance(ranges[0], (list, tuple)):
+            grid_range = [min(r[0] for r in ranges), max(r[1] for r in ranges)]
+        else:
+            grid_range = [ranges[0], ranges[1]]
+
         # build model
         model = instantiate(cfg.model)
-        model.build(device=self.device)
+        model.build(device=self.device, grid_range=grid_range)
 
         # create loss function
         loss_fn = self._create_loss_fn(task_type)

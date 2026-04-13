@@ -1,4 +1,5 @@
-_target_: src.datasets.feynman_i_6_2b.FeynmanI62bDataset
+_target_: src.datasets.feynman.FeynmanDataset
+name: "I.6.20b"
 n_train: 1000
 n_test: 100
 

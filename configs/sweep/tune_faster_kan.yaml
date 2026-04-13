@@ -7,8 +7,5 @@ defaults:
 hydra:
   sweeper:
     params:
-      # same grid search space as fast_kan, both use grid-based basis functions
       model.num_grids: range(4, 33)
-      model.grid_min: interval(-3.0, -0.5)
-      model.grid_max: interval(0.5, 3.0)
       training.optimizer: choice(Adam, LBFGS)

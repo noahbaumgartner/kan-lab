@@ -1,12 +1,12 @@
-import torch
 from scipy.special import j0
 
-from src.datasets.base import create_dataset
+from kan.utils import create_dataset
 
 
 class BesselDataset:
     input_dim = 1
     output_dim = 1
+    ranges = [-1, 1]
 
     f = staticmethod(lambda x: j0(20 * x[:, 0]))
 
@@ -15,12 +15,11 @@ class BesselDataset:
         self.n_test = n_test
 
     def create(self, device="cpu"):
-        dataset = create_dataset(
+        return create_dataset(
             self.f,
             n_var=self.input_dim,
+            ranges=[-1, 1],
             train_num=self.n_train,
             test_num=self.n_test,
-            ranges=[-1, 1],
             device=device,
         )
-        return dataset

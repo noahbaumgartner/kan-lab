@@ -13,11 +13,14 @@ class EfficientKANModel(BaseKANModel):
         self.k = k
         self.grid_update_freq = grid_update_freq
 
-    def build(self, device="cpu"):
+    def build(self, device="cpu", grid_range=None):
+        if grid_range is None:
+            grid_range = [-1, 1]
         self.model = KAN(
             layers_hidden=list(self.layers_hidden),
             grid_size=self.grid,
             spline_order=self.k,
+            grid_range=grid_range,
         ).to(device)
         self.device = device
 

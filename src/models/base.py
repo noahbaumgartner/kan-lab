@@ -11,7 +11,7 @@ class BaseKANModel(ABC):
     reports_rmse: bool = False
 
     @abstractmethod
-    def build(self, device: str = "cpu") -> None:
+    def build(self, device: str = "cpu", grid_range: list = None) -> None:
         """Construct the underlying model from config."""
 
     def regularization_loss(self) -> float:
