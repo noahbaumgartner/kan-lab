@@ -1,5 +1,5 @@
 from .base import BaseKANModel
-from fasterkan import FasterKAN
+from src.modules.fasterkan import FasterKAN
 
 
 class FasterKANModel(BaseKANModel):

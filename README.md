@@ -15,20 +15,20 @@ The following code show commands which can be used for this lab environment.
 
 ```bash
 # run default experiment
-uv run python train.py
+uv run main.py
 
 # run with another model, another optimizer
-uv run python train.py model=mlp
-uv run python train.py model=efficient_kan training=adam
+uv run main.py model=mlp
+uv run main.py model=efficient_kan training=adam
 
 # overwrite parameters
-uv run python train.py model.grid=10 training.steps=200
+uv run main.py model.grid=10 training.steps=200
 
 # sweep
-uv run python train.py --multirun model.grid=3,5,10,20
+uv run main.py --multirun model.grid=3,5,10,20
 
 # sweep based on experiment
-uv run python train.py --multirun +experiment=model_comparison
+uv run main.py --multirun +experiment=model_comparison
 
 # MLflow UI
 uv run mlflow ui --backend-store-uri sqlite:///mlflow.db

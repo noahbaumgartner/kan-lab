@@ -7,7 +7,7 @@ DATASETS=(bessel expsin multiplication highdim deepformula feynman_i_6_2 feynman
 for model in "${MODELS[@]}"; do
   for dataset in "${DATASETS[@]}"; do
     echo "=== Tuning ${model} on ${dataset} ==="
-    HYDRA_FULL_ERROR=1 uv run python train.py --multirun \
+    HYDRA_FULL_ERROR=1 uv run main.py --multirun \
       +sweep="tune_${model}" \
       dataset="${dataset}"
   done

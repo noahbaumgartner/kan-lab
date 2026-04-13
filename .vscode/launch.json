@@ -5,7 +5,7 @@
       "name": "Train (experiment=test) via uv",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/train.py",
+      "program": "${workspaceFolder}/main.py",
       "args": [
         "+experiment=tune_pykan"
       ],
