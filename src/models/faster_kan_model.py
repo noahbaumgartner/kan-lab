@@ -10,8 +10,8 @@ from modules.fasterkan.fasterkan import FasterKAN
 class FasterKANModel(BaseKANModel):
     def __init__(self, layers_hidden, num_grids=8, exponent=2, inv_denominator=0.5, **kwargs):
         self.layers_hidden = layers_hidden
-        self.grid_min = -3.0
-        self.grid_max = 3.0
+        self.grid_min = -1.2
+        self.grid_max = 1.2
         self.num_grids = num_grids
         self.exponent = exponent
         self.inv_denominator = inv_denominator

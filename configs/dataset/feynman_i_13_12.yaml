@@ -1,7 +1,7 @@
 _target_: src.datasets.feynman.FeynmanDataset
 name: "I.13.12"
-n_train: 1000
-n_test: 100
+n_train: 3000
+n_test: 1000
 
 task_type: regression
 

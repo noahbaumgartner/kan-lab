@@ -7,7 +7,7 @@ experiment_name: tune-9
 seed: 42
 
 training:
-  epochs: 100
+  epochs: 500
 
 hydra:
   sweeper:
