@@ -3,7 +3,6 @@ defaults:
   - override /hydra/sweeper: optuna
   - override /hydra/sweeper/sampler: tpe
 
-experiment_name: tune-9
 seed: 42
 
 training:
