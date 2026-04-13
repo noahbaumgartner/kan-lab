@@ -111,7 +111,7 @@ class EfficientKANModel(BaseKANModel):
             train_correct = 0
             with torch.no_grad():
                 for x, y in train_loader:
-                        pred = self.predict(x)
+                    pred = self.predict(x)
                     train_mse += loss_fn(pred, y).item() * x.shape[0]
                     if task_type == "classification":
                         train_correct += (pred.argmax(dim=1) == y).sum().item()
@@ -123,7 +123,7 @@ class EfficientKANModel(BaseKANModel):
             val_correct = 0
             with torch.no_grad():
                 for x, y in val_loader:
-                        pred = self.predict(x)
+                    pred = self.predict(x)
                     val_mse += loss_fn(pred, y).item() * x.shape[0]
                     if task_type == "classification":
                         val_correct += (pred.argmax(dim=1) == y).sum().item()
