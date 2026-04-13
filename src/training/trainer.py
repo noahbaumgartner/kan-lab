@@ -8,11 +8,14 @@ import mlflow
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 
+from src import get_device
+
 
 class Trainer:
     def __init__(self, cfg):
         self.cfg = cfg
-        self.device = cfg.training.get("device", "cpu")
+        device_cfg = cfg.training.get("device", "auto")
+        self.device = get_device() if device_cfg == "auto" else torch.device(device_cfg)
 
     def _create_loss_fn(self, task_type):
         if task_type == "classification":

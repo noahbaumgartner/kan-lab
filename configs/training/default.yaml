@@ -3,4 +3,4 @@ epochs: 500
 lr: 1
 batch_size: -1
 lamb: 0.001
-device: cpu
+device: auto

@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --time=24:00:00
+#SBATCH --job-name=run_tuning
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH --account=cai_ivs
+#SBATCH --partition=gpu
+#SBATCH --mem=32G
+#SBATCH --output=/cluster/home/baumgnoa/log/%j_%N_run_tuning.out
+#SBATCH --error=/cluster/home/baumgnoa/log/%j_%N_run_tuning.err
+
+# %j: parses the SLURM jobID into the file name
+# %N: parses the node name into the file name
+
+# Execute the shell script
+/cluster/home/baumgnoa/kan-lab/scripts/run_tuning.sh
+
+# Submit the job:
+# sbatch scripts/run_tuning.submit
