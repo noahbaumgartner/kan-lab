@@ -16,6 +16,7 @@ class Trainer:
         self.cfg = cfg
         device_cfg = cfg.training.get("device", "auto")
         self.device = get_device() if device_cfg == "auto" else torch.device(device_cfg)
+        print(f"Using device: {self.device}")
 
     def _create_loss_fn(self, task_type):
         if task_type == "classification":
@@ -105,12 +106,8 @@ class Trainer:
                 for step_i, (tl, vl) in enumerate(
                     zip(results["train_loss"], results["test_loss"])
                 ):
-                    train_rmse = (
-                        float(tl) if model.reports_rmse else float(tl) ** 0.5
-                    )
-                    test_rmse = (
-                        float(vl) if model.reports_rmse else float(vl) ** 0.5
-                    )
+                    train_rmse = float(tl) if model.reports_rmse else float(tl) ** 0.5
+                    test_rmse = float(vl) if model.reports_rmse else float(vl) ** 0.5
                     mlflow.log_metrics(
                         {"train_rmse": train_rmse, "test_rmse": test_rmse},
                         step=step_i,

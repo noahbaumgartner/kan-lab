@@ -38,9 +38,15 @@ class BaseKANModel(ABC):
         task_type="regression",
         **kwargs,
     ):
-        # Build DataLoaders
-        train_ds = TensorDataset(dataset["train_input"], dataset["train_label"])
-        val_ds = TensorDataset(dataset["test_input"], dataset["test_label"])
+        # Move data to device once, then build DataLoaders from on-device tensors
+        # to avoid repeated CPU→GPU transfers every iteration.
+        train_input = dataset["train_input"].to(self.device)
+        train_label = dataset["train_label"].to(self.device)
+        test_input = dataset["test_input"].to(self.device)
+        test_label = dataset["test_label"].to(self.device)
+
+        train_ds = TensorDataset(train_input, train_label)
+        val_ds = TensorDataset(test_input, test_label)
 
         n_train = len(train_ds)
         bs = n_train if (batch_size == -1 or batch_size >= n_train) else batch_size
@@ -65,7 +71,6 @@ class BaseKANModel(ABC):
             # --- Train ---
             self.get_model().train()
             for x, y in train_loader:
-                x, y = x.to(self.device), y.to(self.device)
 
                 if optimizer == "LBFGS":
 
@@ -97,8 +102,7 @@ class BaseKANModel(ABC):
             train_total = 0
             with torch.no_grad():
                 for x, y in train_loader:
-                    x, y = x.to(self.device), y.to(self.device)
-                    pred = self.predict(x)
+                        pred = self.predict(x)
                     train_mse += loss_fn(pred, y).item() * x.shape[0]
                     if task_type == "classification":
                         train_correct += (pred.argmax(dim=1) == y).sum().item()
@@ -110,8 +114,7 @@ class BaseKANModel(ABC):
             val_total = 0
             with torch.no_grad():
                 for x, y in val_loader:
-                    x, y = x.to(self.device), y.to(self.device)
-                    pred = self.predict(x)
+                        pred = self.predict(x)
                     val_mse += loss_fn(pred, y).item() * x.shape[0]
                     if task_type == "classification":
                         val_correct += (pred.argmax(dim=1) == y).sum().item()
