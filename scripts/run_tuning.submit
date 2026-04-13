@@ -13,6 +13,8 @@
 # %N: parses the node name into the file name
 
 # Execute the shell script
+module load uv/0.10.10
+uv sync
 /cluster/home/baumgnoa/kan-lab/scripts/run_tuning.sh
 
 # Submit the job:
