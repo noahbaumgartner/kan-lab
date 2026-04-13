@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
 from .base import BaseKANModel
-from modules.efficientkan.src.efficient_kan import KAN
+from efficient_kan import KAN
 
 
 class EfficientKANModel(BaseKANModel):

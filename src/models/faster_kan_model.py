@@ -1,10 +1,5 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "modules" / "fasterkan"))
-
 from .base import BaseKANModel
-from modules.fasterkan.fasterkan import FasterKAN
+from fasterkan import FasterKAN
 
 
 class FasterKANModel(BaseKANModel):

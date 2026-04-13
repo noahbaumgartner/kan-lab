@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 from .base import BaseKANModel
-from modules.fastkan.fastkan import FastKAN, FastKANLayer
+from fastkan import FastKAN, FastKANLayer
 
 
 class FastKANModel(BaseKANModel):
