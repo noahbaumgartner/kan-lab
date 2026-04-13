@@ -122,6 +122,9 @@ class Trainer:
                 mlflow.log_metric("final_train_rmse", final_train)
                 mlflow.log_metric("final_test_rmse", final_test)
 
+                print(f"\nFinal Train RMSE: {final_train:.6f}")
+                print(f"Final Test RMSE:  {final_test:.6f}")
+
             mlflow.log_metric("training_time_sec", train_time)
 
         return results

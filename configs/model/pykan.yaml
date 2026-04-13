@@ -3,4 +3,5 @@ n_hidden_layers: ${dataset.n_hidden}
 hidden_width: ${dataset.hidden_width_min}
 width: ${make_width:${dataset.input_dim},${dataset.output_dim},${model.n_hidden_layers},${model.hidden_width}}
 k: 3
+grid: 20
 base_fun: silu
