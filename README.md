@@ -39,7 +39,9 @@ uv run jupyter notebook notebooks/
 
 ## Datasets
 
-This section define the datasets from the foundational KAN paper (https://arxiv.org/abs/2404.19756): 5 toy datasets (Section 3.1) and 5 Feynman equations (Section 3.3).
+### Functional Datasets (1-dimensional regression)
+
+These datasets are from the foundational KAN paper ([arXiv:2404.19756](https://arxiv.org/abs/2404.19756)): 5 toy datasets (Section 3.1) and 5 Feynman equations (Section 3.3).
 
 | #   | Name                | Formula                                                 | Variables                         | KAN Shape       |
 | --- | ------------------- | ------------------------------------------------------- | --------------------------------- | --------------- |
@@ -54,16 +56,21 @@ This section define the datasets from the foundational KAN paper (https://arxiv.
 | 9   | **Feynman I.12.11** | `f = q(Ef + Bv·sinθ)`                                   | q, Ef, B, v, θ                    | [2, 2, 2, 1]    |
 | 10  | **Feynman I.13.12** | `f = Gm₁m₂(1/r₂ - 1/r₁)`                                | G, m₁, m₂, r₁, r₂                 | [2, 2, 1]       |
 
-## Modules
+### Image / Classification Datasets
 
-The following KAN variants are submodules in `modules/`, which can be evaluated in this project.
+| Name              | Task           | Input               | Output     | Description                                           |
+| ----------------- | -------------- | ------------------- | ---------- | ----------------------------------------------------- |
+| **MNIST**         | Classification | 784 (28x28 flatten) | 10 classes | Handwritten digit classification                      |
+| **Gaussian Blob** | Regression     | 100 (10x10 flatten) | 4 values   | Predict center (x, y), width, and amplitude of a blob |
 
-| Module         | Repository                                                                  | Paper                                                |
-| -------------- | --------------------------------------------------------------------------- | ---------------------------------------------------- |
-| `pykan`        | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                 | [arXiv:2404.19756](https://arxiv.org/abs/2404.19756) |
-| `efficientkan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         | -                                                    |
-| `fastkan`      | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     | [arXiv:2405.06721](https://arxiv.org/abs/2405.06721) |
-| `chebykan`     | [SynodicMonth/ChebyKAN](https://github.com/SynodicMonth/ChebyKAN)           | [arXiv:2405.07200](https://arxiv.org/abs/2405.07200) |
-| `fasterkan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) | -                                                    |
-| `wavkan`       | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                     | [arXiv:2405.12832](https://arxiv.org/abs/2405.12832) |
-| `relukan`      | [quiqi/relu_kan](https://github.com/quiqi/relu_kan)                         | [arXiv:2406.02075](https://arxiv.org/abs/2406.02075) |
+## Models
+
+The following KAN variants are implemented in this project. The module code in `src/modules/` is copied from the respective repositories.
+
+| Model        | Config name     | Repository                                                                  | Paper                                                |
+| ------------ | --------------- | --------------------------------------------------------------------------- | ---------------------------------------------------- |
+| PyKAN        | `pykan`         | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                 | [arXiv:2404.19756](https://arxiv.org/abs/2404.19756) |
+| EfficientKAN | `efficient_kan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         | -                                                    |
+| FastKAN      | `fast_kan`      | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     | [arXiv:2405.06721](https://arxiv.org/abs/2405.06721) |
+| FasterKAN    | `faster_kan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) | -                                                    |
+| WavKAN       | `wavkan`        | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                     | [arXiv:2405.12832](https://arxiv.org/abs/2405.12832) |
