@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODELS=(pykan efficient_kan fast_kan faster_kan)
-DATASETS=(bessel expsin multiplication highdim deepformula feynman_i_6_2 feynman_i_6_2b feynman_i_9_18 feynman_i_12_11 feynman_i_13_12)
+MODELS=(efficient_kan fast_kan faster_kan)
+DATASETS=(bessel)
 
 for model in "${MODELS[@]}"; do
   for dataset in "${DATASETS[@]}"; do

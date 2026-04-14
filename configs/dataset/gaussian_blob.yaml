@@ -1,0 +1,15 @@
+_target_: src.datasets.gaussian_blob.GaussianBlobDataset
+n_train: 5000
+n_test: 1000
+
+task_type: regression
+
+# metadata for width construction (not passed to __init__)
+input_dim: 100
+output_dim: 4
+
+n_hidden: 1
+n_hidden_min: 1
+n_hidden_max: 3
+hidden_width_min: 16
+hidden_width_max: 64
