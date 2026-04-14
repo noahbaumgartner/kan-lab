@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - tune_base
+  - override /model: wavkan
+  - override /training: adam
+
+hydra:
+  sweeper:
+    params:
+      model.wavelet_type: choice(mexican_hat, morlet, dog, meyer, shannon)
+      training.optimizer: choice(Adam)
+      training.lr: tag(log, interval(0.001, 1.0))
