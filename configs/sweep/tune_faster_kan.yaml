@@ -10,6 +10,5 @@ hydra:
       model.num_grids: range(4, 33)
       model.exponent: range(2, 5)
       model.inv_denominator: interval(0.1, 1.0)
-      training.optimizer: choice(Adam, LBFGS)
+      training.optimizer: choice(Adam)
       training.lr: tag(log, interval(0.001, 1.0))
-      training.lamb: tag(log, interval(1e-5, 0.1))

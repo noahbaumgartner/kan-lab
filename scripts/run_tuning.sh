@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODELS=(efficient_kan fast_kan faster_kan)
+MODELS=(fast_kan)
 DATASETS=(bessel)
 
 for model in "${MODELS[@]}"; do

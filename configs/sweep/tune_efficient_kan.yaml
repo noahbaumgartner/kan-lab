@@ -9,6 +9,5 @@ hydra:
     params:
       model.grid_size: range(3, 51)
       model.grid_update_freq: range(5, 30)
-      training.optimizer: choice(Adam, LBFGS)
+      training.optimizer: choice(Adam)
       training.lr: tag(log, interval(0.001, 1.0))
-      training.lamb: tag(log, interval(1e-5, 0.1))
