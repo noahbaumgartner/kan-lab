@@ -53,7 +53,11 @@ class Trainer:
         mlflow.set_tracking_uri(cfg.get("mlflow_tracking_uri", "mlruns"))
         mlflow.set_experiment(cfg.get("experiment", "experiment"))
 
-        with mlflow.start_run(run_name=_generate_run_name(cfg)):
+        log_system_metrics = cfg.get("log_system_metrics", True)
+        with mlflow.start_run(
+            run_name=_generate_run_name(cfg),
+            log_system_metrics=log_system_metrics,
+        ):
             # log config parameters
             flat_cfg = _flatten_dict(OmegaConf.to_container(cfg, resolve=True))
             mlflow.log_params(flat_cfg)
