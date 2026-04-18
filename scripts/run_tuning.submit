@@ -5,6 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --account=cai_ivs
 #SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
 #SBATCH --mem=32G
 #SBATCH --output=/cluster/home/baumgnoa/log/%j_%N_run_tuning.out
 #SBATCH --error=/cluster/home/baumgnoa/log/%j_%N_run_tuning.err
@@ -13,6 +14,7 @@
 # %N: parses the node name into the file name
 
 # Execute the shell script
+export PYTHONUNBUFFERED=1
 module load uv/0.10.10
 uv sync
 /cluster/home/baumgnoa/kan-lab/scripts/run_tuning.sh

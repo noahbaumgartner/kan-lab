@@ -42,6 +42,13 @@ class Trainer:
         dataset_obj = instantiate(cfg.dataset)
         dataset = dataset_obj.create(device=self.device)
 
+        print(f"cuda available: {torch.cuda.is_available()}")
+        print(
+            f"device name: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'none'}"
+        )
+        print(f"cuda version: {torch.version.cuda}")  # set = NVIDIA
+        print(f"hip version:  {torch.version.hip}")  # set = AMD
+
         # build model
         model = instantiate(cfg.model)
         model.build(device=self.device)
