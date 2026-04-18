@@ -54,10 +54,7 @@ class Trainer:
         mlflow.set_experiment(cfg.get("experiment", "experiment"))
         mlflow.enable_system_metrics_logging()
 
-        with mlflow.start_run(
-            run_name=_generate_run_name(cfg),
-            log_system_metrics=log_system_metrics,
-        ):
+        with mlflow.start_run(run_name=_generate_run_name(cfg)):
             # log config parameters
             flat_cfg = _flatten_dict(OmegaConf.to_container(cfg, resolve=True))
             mlflow.log_params(flat_cfg)
