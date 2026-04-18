@@ -19,4 +19,6 @@ dependencies = [
     "hydra-optuna-sweeper>=1.2",
     "torchvision>=0.25.0",
     "pykan==0.2.7",
+    "nvidia-ml-py>=13.595.45",
+    "psutil>=7.2.2",
 ]
