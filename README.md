@@ -19,7 +19,7 @@ uv run main.py
 
 # run with another model, another optimizer
 uv run main.py model=mlp
-uv run main.py model=efficient_kan training=adam
+uv run main.py model=efficientkan training=adam
 
 # overwrite parameters
 uv run main.py model.grid=10 training.steps=200
@@ -70,7 +70,7 @@ The following KAN variants are implemented in this project. The module code in `
 | Model        | Config name     | Repository                                                                  | Paper                                                |
 | ------------ | --------------- | --------------------------------------------------------------------------- | ---------------------------------------------------- |
 | PyKAN        | `pykan`         | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                 | [arXiv:2404.19756](https://arxiv.org/abs/2404.19756) |
-| EfficientKAN | `efficient_kan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         | -                                                    |
-| FastKAN      | `fast_kan`      | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     | [arXiv:2405.06721](https://arxiv.org/abs/2405.06721) |
-| FasterKAN    | `faster_kan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) | -                                                    |
+| EfficientKAN | `efficientkan`  | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         | -                                                    |
+| FastKAN      | `fastkan`       | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     | [arXiv:2405.06721](https://arxiv.org/abs/2405.06721) |
+| FasterKAN    | `fasterkan`     | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) | -                                                    |
 | WavKAN       | `wavkan`        | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                     | [arXiv:2405.12832](https://arxiv.org/abs/2405.12832) |

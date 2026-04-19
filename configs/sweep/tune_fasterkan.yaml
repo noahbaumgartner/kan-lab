@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
   - tune_base
-  - override /model: faster_kan
+  - override /model: fasterkan
   - override /training: adam
 
 hydra:
