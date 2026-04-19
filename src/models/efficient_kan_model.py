@@ -73,69 +73,75 @@ class EfficientKANModel(BaseKANModel):
             results["train_acc"] = []
             results["test_acc"] = []
 
+        device = self.device
         for epoch in tqdm(range(epochs), desc="Training"):
-            # --- Train ---
+            # --- Train (accumulate metrics during the step to skip a redundant eval pass) ---
             self.get_model().train()
-            for i, (x, y) in enumerate(train_loader):
+            train_loss_sum = torch.zeros((), device=device)
+            train_correct_sum = torch.zeros((), device=device)
+            train_total = 0
 
+            for i, (x, y) in enumerate(train_loader):
                 # periodic grid update
                 update_grid = epoch % self.grid_update_freq == 0 and i == 0
 
                 if optimizer == "LBFGS":
+                    captured = {}
 
                     def closure():
-                        opt.zero_grad()
+                        opt.zero_grad(set_to_none=True)
                         pred = self.predict(x, update_grid=update_grid)
-                        loss = loss_fn(pred, y)
+                        data_loss = loss_fn(pred, y)
+                        captured["pred"] = pred.detach()
+                        captured["data_loss"] = data_loss.detach()
                         reg = self.regularization_loss()
-                        if reg > 0:
-                            loss = loss + lamb * reg
+                        loss = data_loss + lamb * reg if reg > 0 else data_loss
                         loss.backward()
                         return loss
 
                     opt.step(closure)
+                    pred_detached = captured["pred"]
+                    data_loss = captured["data_loss"]
                 else:
-                    opt.zero_grad()
+                    opt.zero_grad(set_to_none=True)
                     pred = self.predict(x, update_grid=update_grid)
-                    loss = loss_fn(pred, y)
+                    data_loss = loss_fn(pred, y)
                     reg = self.regularization_loss()
-                    if reg > 0:
-                        loss = loss + lamb * reg
+                    loss = data_loss + lamb * reg if reg > 0 else data_loss
                     loss.backward()
                     opt.step()
+                    pred_detached = pred.detach()
+                    data_loss = data_loss.detach()
 
-            # --- Validate ---
+                bs_x = x.shape[0]
+                train_loss_sum = train_loss_sum + data_loss * bs_x
+                if task_type == "classification":
+                    train_correct_sum = train_correct_sum + (pred_detached.argmax(dim=1) == y).sum()
+                train_total += bs_x
+
+            train_mse = (train_loss_sum / train_total).item()
+
+            # --- Validate (on val set only) ---
             self.get_model().eval()
-            train_mse = 0.0
-            train_total = 0
-            train_correct = 0
-            with torch.no_grad():
-                for x, y in train_loader:
-                    pred = self.predict(x)
-                    train_mse += loss_fn(pred, y).item() * x.shape[0]
-                    if task_type == "classification":
-                        train_correct += (pred.argmax(dim=1) == y).sum().item()
-                    train_total += x.shape[0]
-            train_mse /= train_total
-
-            val_mse = 0.0
+            val_loss_sum = torch.zeros((), device=device)
+            val_correct_sum = torch.zeros((), device=device)
             val_total = 0
-            val_correct = 0
             with torch.no_grad():
                 for x, y in val_loader:
                     pred = self.predict(x)
-                    val_mse += loss_fn(pred, y).item() * x.shape[0]
+                    bs_x = x.shape[0]
+                    val_loss_sum = val_loss_sum + loss_fn(pred, y) * bs_x
                     if task_type == "classification":
-                        val_correct += (pred.argmax(dim=1) == y).sum().item()
-                    val_total += x.shape[0]
-            val_mse /= val_total
+                        val_correct_sum = val_correct_sum + (pred.argmax(dim=1) == y).sum()
+                    val_total += bs_x
+            val_mse = (val_loss_sum / val_total).item()
 
             results["train_loss"].append(train_mse)
             results["test_loss"].append(val_mse)
             results["reg"].append(self.regularization_loss())
 
             if task_type == "classification":
-                results["train_acc"].append(train_correct / train_total)
-                results["test_acc"].append(val_correct / val_total)
+                results["train_acc"].append((train_correct_sum / train_total).item())
+                results["test_acc"].append((val_correct_sum / val_total).item())
 
         return results

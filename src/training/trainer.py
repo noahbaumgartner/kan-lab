@@ -16,6 +16,8 @@ class Trainer:
         device_cfg = cfg.training.get("device", "auto")
         self.device = get_device() if device_cfg == "auto" else torch.device(device_cfg)
         print(f"Using device: {self.device}")
+        if "cuda" in str(self.device):
+            torch.backends.cudnn.benchmark = True
 
     def _create_loss_fn(self, task_type):
         if task_type == "classification":
