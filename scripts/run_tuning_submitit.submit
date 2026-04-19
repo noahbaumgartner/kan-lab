@@ -9,6 +9,7 @@
 #SBATCH --mem=4G
 #SBATCH --output=/cluster/home/baumgnoa/log/%j_%N_run_tuning_submitit.out
 #SBATCH --error=/cluster/home/baumgnoa/log/%j_%N_run_tuning_submitit.err
+#SBATCH --export=ALL
 
 # This driver job runs on a CPU node and orchestrates the tuning sweep.
 # The hydra submitit launcher inside run_tuning_submitit.sh submits the
@@ -24,7 +25,10 @@ cd /cluster/home/baumgnoa/kan-lab
 # project venv under the repo on /cluster/home, which all nodes can see.
 export UV_PROJECT_ENVIRONMENT=/cluster/home/baumgnoa/kan-lab/.venv
 
+echo "UV_PROJECT_ENVIRONMENT=$UV_PROJECT_ENVIRONMENT"
 uv sync
+uv run python -c "import sys, torch; print('python:', sys.executable); print('torch:', torch.__version__); print('arch_list:', torch.cuda.get_arch_list())"
+
 ./scripts/run_tuning_submitit.sh
 
 # Submit the job:
