@@ -18,6 +18,12 @@
 export PYTHONUNBUFFERED=1
 module load uv/0.10.10
 cd /cluster/home/baumgnoa/kan-lab
+
+# Submitit propagates sys.executable to worker nodes, so the venv must live
+# on a shared filesystem (not node-local /scratch). Force uv to create the
+# project venv under the repo on /cluster/home, which all nodes can see.
+export UV_PROJECT_ENVIRONMENT=/cluster/home/baumgnoa/kan-lab/.venv
+
 uv sync
 ./scripts/run_tuning_submitit.sh
 
