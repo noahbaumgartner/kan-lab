@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODELS=(wavkan)
+MODELS=(pykan)
 DATASETS=(bessel)
 
 for model in "${MODELS[@]}"; do
