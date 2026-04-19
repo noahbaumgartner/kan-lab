@@ -19,6 +19,15 @@ for model in "${MODELS[@]}"; do
   for dataset in "${DATASETS[@]}"; do
     echo "=== Tuning ${model} on ${dataset} ==="
     HYDRA_FULL_ERROR=1 uv run main.py --multirun \
+      hydra/launcher=submitit_slurm \
+      hydra.launcher.timeout_min=1440 \
+      hydra.launcher.partition=gpu \
+      hydra.launcher.gres=gpu:1 \
+      hydra.launcher.account=cai_ivs \
+      hydra.launcher.mem_gb=32 \
+      hydra.launcher.tasks_per_node=1 \
+      hydra.launcher.nodes=1 \
+      hydra.launcher.array_parallelism=8 \
       +sweep="tune_${model}" \
       dataset="${dataset}"
   done
