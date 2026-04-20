@@ -29,7 +29,8 @@ for model in "${MODELS[@]}"; do
       hydra.launcher.nodes=1 \
       hydra.launcher.array_parallelism=8 \
       +sweep="tune_${model}" \
-      dataset="${dataset}"
+      dataset="${dataset}" \
+      mlflow_tracking_uri="${MLFLOW_TRACKING_URI}"
   done
 done
 

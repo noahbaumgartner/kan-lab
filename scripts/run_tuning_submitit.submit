@@ -29,6 +29,15 @@ echo "UV_PROJECT_ENVIRONMENT=$UV_PROJECT_ENVIRONMENT"
 uv sync
 uv run python -c "import sys, torch; print('python:', sys.executable); print('torch:', torch.__version__); print('arch_list:', torch.cuda.get_arch_list())"
 
+MLFLOW_HOST=$(hostname -f)
+MLFLOW_PORT=9299
+export MLFLOW_TRACKING_URI="http://${MLFLOW_HOST}:${MLFLOW_PORT}"
+echo "MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}"
+
+uv run mlflow server --host 0.0.0.0 --port ${MLFLOW_PORT} &
+MLFLOW_PID=$!
+trap "kill $MLFLOW_PID 2>/dev/null || true" EXIT
+
 ./scripts/run_tuning_submitit.sh
 
 # Submit the job:

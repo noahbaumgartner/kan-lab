@@ -3,7 +3,7 @@ hydra:
     dir: .
 
 seed: 42
-mlflow_tracking_uri: mlruns
+mlflow_tracking_uri: http://127.0.0.1:9299
 
 trainer:
   _target_: src.training.trainer.Trainer
