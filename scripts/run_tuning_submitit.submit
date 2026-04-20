@@ -31,10 +31,16 @@ uv run python -c "import sys, torch; print('python:', sys.executable); print('to
 
 MLFLOW_HOST=$(hostname -f)
 MLFLOW_PORT=9299
+MLFLOW_DIR=/cluster/home/baumgnoa/kan-lab/mlflow
+mkdir -p "${MLFLOW_DIR}"
 export MLFLOW_TRACKING_URI="http://${MLFLOW_HOST}:${MLFLOW_PORT}"
 echo "MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}"
 
-uv run mlflow server --host 0.0.0.0 --port ${MLFLOW_PORT} &
+uv run mlflow server \
+  --host 0.0.0.0 \
+  --port ${MLFLOW_PORT} \
+  --backend-store-uri "sqlite:///${MLFLOW_DIR}/mlflow.db" \
+  --default-artifact-root "${MLFLOW_DIR}/artifacts" &
 MLFLOW_PID=$!
 trap "kill $MLFLOW_PID 2>/dev/null || true" EXIT
 
