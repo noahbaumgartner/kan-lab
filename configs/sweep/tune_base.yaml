@@ -15,7 +15,7 @@ hydra:
     direction: minimize
 
     n_trials: 100
-    n_jobs: 8
+    n_jobs: 4
     params:
       # architecture bounds from dataset config (paper-informed per function)
       model.n_hidden_layers: range(${dataset.n_hidden_min}, ${dataset.n_hidden_max})
