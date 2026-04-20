@@ -34,6 +34,7 @@ MLFLOW_PORT=9299
 MLFLOW_DIR=/cluster/home/baumgnoa/kan-lab/mlflow
 mkdir -p "${MLFLOW_DIR}"
 export MLFLOW_TRACKING_URI="http://${MLFLOW_HOST}:${MLFLOW_PORT}"
+export MLFLOW_SERVER_ALLOWED_HOSTS="*"
 echo "MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}"
 
 uv run mlflow server \
