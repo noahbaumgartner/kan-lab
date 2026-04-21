@@ -69,19 +69,9 @@ class PyKANModel(BaseKANModel):
 
         metrics = self._make_metrics(dataset, task_type)
 
-        # pykan's internal fit takes opt as a string ("Adam"/"LBFGS") and builds
-        # the optimizer itself via torch.optim.Adam(params, lr=lr). To route our
-        # wrapper-based factory through it, we monkey-patch torch.optim.Adam (in
-        # kan.MultKAN's namespace) to ignore pykan's lr and call our factory,
-        # which already carries all its hyperparams.
-        import sys
-        kan_mod = sys.modules.get("kan.MultKAN")
-        original_adam = kan_mod.torch.optim.Adam if kan_mod is not None else None
-        if kan_mod is not None:
-            kan_mod.torch.optim.Adam = lambda params, lr=None: optimizer_factory(params)
-
         fit_kwargs = dict(
-            opt="Adam",
+            opt=getattr(optimizer_factory, "PYKAN_OPT", "Adam"),
+            lr=optimizer_factory.lr,
             steps=epochs,
             lamb=lamb,
             loss_fn=loss_fn,
@@ -90,12 +80,7 @@ class PyKANModel(BaseKANModel):
         if metrics is not None:
             fit_kwargs["metrics"] = metrics
 
-        try:
-            results = self.model.fit(dataset, **fit_kwargs)
-        finally:
-            if original_adam is not None:
-                kan_mod.torch.optim.Adam = original_adam
-        return results
+        return self.model.fit(dataset, **fit_kwargs)
 
     def predict(self, x):
         return self.model.forward(x)

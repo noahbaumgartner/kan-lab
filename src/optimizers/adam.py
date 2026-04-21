@@ -2,6 +2,8 @@ import torch
 
 
 class Adam:
+    PYKAN_OPT = "Adam"
+
     def __init__(self, lr: float, **_ignored):
         self.lr = lr
 
