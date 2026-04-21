@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=72:00:00
+#SBATCH --time=5-00:00:00
 #SBATCH --job-name=kan_mlflow_server
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
