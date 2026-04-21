@@ -3,6 +3,7 @@
 set -euo pipefail
 
 : "${MODEL:?MODEL must be set by the caller (e.g. MODEL=pykan)}"
+: "${EXPERIMENT:?EXPERIMENT must be set by the caller (MLflow experiment name)}"
 
 DATASETS=(
   bessel
@@ -43,7 +44,8 @@ for dataset in "${DATASETS[@]}"; do
   HYDRA_FULL_ERROR=1 uv run main.py --multirun \
     +sweep="tune_${MODEL}" \
     dataset="${dataset}" \
-    mlflow_tracking_uri="${MLFLOW_TRACKING_URI}"
+    mlflow_tracking_uri="${MLFLOW_TRACKING_URI}" \
+    +experiment="${EXPERIMENT}"
 done
 
 echo "=== ${MODEL} tuning complete ==="
