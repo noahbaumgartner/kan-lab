@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH --time=48:00:00
+#SBATCH --job-name=kan_tune_fastkan
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH --account=cai_ivs
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --mem=8G
+#SBATCH --output=/cluster/home/baumgnoa/log/%j_%N_tune_fastkan.out
+#SBATCH --error=/cluster/home/baumgnoa/log/%j_%N_tune_fastkan.err
+#SBATCH --export=ALL
+
+export MODEL=fastkan
+source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
+
+# Submit: sbatch scripts/tune_fastkan.submit
