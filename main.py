@@ -16,11 +16,16 @@ import hydra
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 
-OmegaConf.register_new_resolver(
-    "make_width",
-    lambda in_d, out_d, n_h, h_w: [int(in_d)] + [int(h_w)] * int(n_h) + [int(out_d)],
-    replace=True,
-)
+def _make_width(in_d, out_d, n_h, *hidden_widths):
+    n_h = int(n_h)
+    if n_h > len(hidden_widths):
+        raise ValueError(
+            f"make_width: n_hidden_layers={n_h} exceeds provided widths ({len(hidden_widths)})"
+        )
+    return [int(in_d)] + [int(w) for w in hidden_widths[:n_h]] + [int(out_d)]
+
+
+OmegaConf.register_new_resolver("make_width", _make_width, replace=True)
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")

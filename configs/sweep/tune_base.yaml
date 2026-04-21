@@ -15,9 +15,9 @@ hydra:
     direction: minimize
 
     n_trials: 100
-    # TPE samples from the posterior built on completed trials — parallel trials
-    # would all see the same stale posterior, wasting the sampler's intelligence.
     n_jobs: 1
     params:
       model.n_hidden_layers: range(${dataset.n_hidden_min}, ${dataset.n_hidden_max})
-      model.hidden_width: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})
+      model.hidden_width_0: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})
+      model.hidden_width_1: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})
+      model.hidden_width_2: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})
