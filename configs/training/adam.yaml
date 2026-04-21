@@ -1,6 +1,4 @@
-optimizer: Adam
 epochs: 500
-lr: 1e-3
 batch_size: 256
 lamb: 0.0
 device: auto

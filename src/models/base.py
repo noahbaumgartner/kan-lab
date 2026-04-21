@@ -30,8 +30,7 @@ class BaseKANModel(ABC):
         self,
         dataset,
         epochs,
-        lr,
-        optimizer,
+        optimizer_factory,
         loss_fn,
         batch_size,
         lamb,
@@ -54,13 +53,8 @@ class BaseKANModel(ABC):
         train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)
         val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False)
 
-        # Optimizer
-        if optimizer == "Adam":
-            opt = torch.optim.Adam(self.get_model().parameters(), lr=lr)
-        elif optimizer == "LBFGS":
-            opt = torch.optim.LBFGS(self.get_model().parameters(), lr=lr)
-        else:
-            raise ValueError(f"Unsupported optimizer: {optimizer}")
+        opt = optimizer_factory(self.get_model().parameters())
+        is_lbfgs = isinstance(opt, torch.optim.LBFGS)
 
         results = {"train_loss": [], "test_loss": [], "reg": []}
         if task_type == "classification":
@@ -76,7 +70,7 @@ class BaseKANModel(ABC):
             train_total = 0
 
             for x, y in train_loader:
-                if optimizer == "LBFGS":
+                if is_lbfgs:
                     captured = {}
 
                     def closure():

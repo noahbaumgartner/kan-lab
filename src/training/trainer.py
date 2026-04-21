@@ -47,6 +47,9 @@ class Trainer:
         model = instantiate(cfg.model)
         model.build(device=self.device)
 
+        # optimizer factory: call with model.parameters() to build the torch optimizer
+        optimizer_factory = instantiate(cfg.optimizer)
+
         # create loss function
         loss_fn = self._create_loss_fn(task_type)
 
@@ -72,8 +75,7 @@ class Trainer:
             results = model.fit(
                 dataset=dataset,
                 epochs=cfg.training.epochs,
-                lr=cfg.training.lr,
-                optimizer=cfg.training.optimizer,
+                optimizer_factory=optimizer_factory,
                 loss_fn=loss_fn,
                 batch_size=cfg.training.get("batch_size", -1),
                 lamb=cfg.training.get("lamb", 0.0),
