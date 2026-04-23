@@ -21,3 +21,4 @@ hydra:
       model.hidden_width_0: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})
       model.hidden_width_1: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})
       model.hidden_width_2: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})
+      model.hidden_width_3: range(${dataset.hidden_width_min}, ${dataset.hidden_width_max})

@@ -189,7 +189,10 @@ def _get_model_name(cfg):
 
 def _get_dataset_name(cfg):
     dataset_class = cfg.dataset.get("_target_", "unknown")
-    return dataset_class.rsplit(".", 1)[-1].replace("Dataset", "")
+    base_name = dataset_class.rsplit(".", 1)[-1].replace("Dataset", "")
+    if base_name == "Feynman":
+        return f"Feynman_{cfg.dataset.get('name', 'unknown')}"
+    return base_name
 
 
 def _get_shape(cfg):

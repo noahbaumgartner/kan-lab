@@ -6,11 +6,6 @@ set -euo pipefail
 : "${EXPERIMENT:?EXPERIMENT must be set by the caller (MLflow experiment name)}"
 
 DATASETS=(
-  bessel
-  expsin
-  multiplication
-  highdim
-  deepformula
   feynman_i_6_2
   feynman_i_6_2b
   feynman_i_9_18
