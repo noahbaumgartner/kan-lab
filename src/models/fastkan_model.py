@@ -5,10 +5,10 @@ from src.modules.fastkan import FastKAN, FastKANLayer
 
 
 class FastKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, num_grids=8, grid_min=-3.0, grid_max=3.0, **kwargs):
+    def __init__(self, layers_hidden, num_grids=8, **kwargs):
         self.layers_hidden = layers_hidden
-        self.grid_min = grid_min
-        self.grid_max = grid_max
+        self.grid_min = -2.0
+        self.grid_max = 2.0
         self.num_grids = num_grids
 
     def build(self, device="cpu"):
