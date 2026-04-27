@@ -15,9 +15,9 @@ MODELS=(efficientkan fastkan wavkan)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 for model in "${MODELS[@]}"; do
-  job="${SCRIPT_DIR}/tune_${model}_mnist_blob.submit"
+  job="${SCRIPT_DIR}/tune_${model}.submit"
   echo "Submitting ${job} (experiment=${EXPERIMENT})..."
   sbatch --export=ALL,EXPERIMENT="${EXPERIMENT}" "${job}"
 done
 
-echo "All ${#MODELS[@]} mnist+blob tuning jobs submitted. Check with: squeue -u \$USER"
+echo "All ${#MODELS[@]} image tuning jobs submitted. Check with: squeue -u \$USER"

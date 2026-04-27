@@ -6,9 +6,9 @@ set -euo pipefail
 : "${EXPERIMENT:?EXPERIMENT must be set by the caller (MLflow experiment name)}"
 
 # Optional overrides:
-#   SWEEP    — Hydra sweep name (default: tune_${MODEL})
+#   SWEEP    — Hydra sweep name including subgroup (default: functional/tune_${MODEL})
 #   DATASETS — space-separated list of dataset names
-SWEEP="${SWEEP:-tune_${MODEL}}"
+SWEEP="${SWEEP:-functional/tune_${MODEL}}"
 if [[ -n "${DATASETS:-}" ]]; then
   read -r -a DATASETS <<< "${DATASETS}"
 else

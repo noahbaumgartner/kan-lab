@@ -1,14 +1,14 @@
 # @package _global_
 defaults:
-  - tune_base
-  - override /model: fastkan
+  - /sweep/tune_base
+  - override /model: wavkan
   - override /training: adam
 
 hydra:
   sweeper:
     params:
       optimizer: choice(adam, adamw, sgd)
-      model.num_grids: range(4, 33)
+      model.wavelet_type: choice(mexican_hat, morlet, dog, meyer, shannon)
       optimizer.lr: tag(log, interval(0.001, 1.0))
       ++optimizer.weight_decay: tag(log, interval(1e-6, 1e-2))
       ++optimizer.momentum: interval(0.0, 0.99)

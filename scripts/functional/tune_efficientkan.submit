@@ -14,4 +14,4 @@
 export MODEL=efficientkan
 source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
 
-# Submit: sbatch scripts/tune_efficientkan.submit
+# Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/functional/tune_efficientkan.submit

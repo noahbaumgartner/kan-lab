@@ -3,8 +3,9 @@ set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 <experiment_name>" >&2
-  echo "  Submits one SLURM tuning job per KAN model. The experiment_name is" >&2
-  echo "  used as the MLflow experiment for all runs across all models." >&2
+  echo "  Submits one SLURM tuning job per KAN model on the functional" >&2
+  echo "  (Feynman/Bessel/etc.) datasets. The experiment_name is used as the" >&2
+  echo "  MLflow experiment for all runs across all models." >&2
   exit 1
 fi
 
@@ -19,4 +20,4 @@ for model in "${MODELS[@]}"; do
   sbatch --export=ALL,EXPERIMENT="${EXPERIMENT}" "${job}"
 done
 
-echo "All ${#MODELS[@]} tuning jobs submitted. Check with: squeue -u \$USER"
+echo "All ${#MODELS[@]} functional tuning jobs submitted. Check with: squeue -u \$USER"

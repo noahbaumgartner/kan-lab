@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - tune_base
+  - /sweep/tune_base
   - override /model: efficientkan
   - override /training: adam
 

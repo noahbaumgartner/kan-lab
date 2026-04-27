@@ -14,4 +14,4 @@
 export MODEL=pykan
 source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
 
-# Submit: sbatch scripts/tune_pykan.submit
+# Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/functional/tune_pykan.submit

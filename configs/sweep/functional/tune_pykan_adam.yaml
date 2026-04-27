@@ -1,7 +1,9 @@
 # @package _global_
 # PyKAN sweep restricted to the Adam optimizer.
+# LR range extended downward (1e-5..1e-1) since Adam needs much smaller steps
+# than LBFGS to make progress on PyKAN's spline coefficients.
 defaults:
-  - tune_base
+  - /sweep/tune_base
   - override /model: pykan
   - override /optimizer: adam
   - override /training: adam
@@ -10,5 +12,5 @@ hydra:
   sweeper:
     params:
       model.grid: range(3, 51)
-      optimizer.lr: tag(log, interval(0.001, 1.0))
+      optimizer.lr: tag(log, interval(1e-5, 1e-1))
       training.lamb: tag(log, interval(1e-5, 0.1))

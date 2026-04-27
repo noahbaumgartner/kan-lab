@@ -1,19 +1,19 @@
 #!/bin/bash
 #SBATCH --time=3-00:00:00
-#SBATCH --job-name=kan_tune_fastkan_mnist_blob
+#SBATCH --job-name=kan_tune_fastkan_image
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --account=cai_ivs
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=8G
-#SBATCH --output=/cluster/home/baumgnoa/log/%j_%N_tune_fastkan_mnist_blob.out
-#SBATCH --error=/cluster/home/baumgnoa/log/%j_%N_tune_fastkan_mnist_blob.err
+#SBATCH --output=/cluster/home/baumgnoa/log/%j_%N_tune_fastkan_image.out
+#SBATCH --error=/cluster/home/baumgnoa/log/%j_%N_tune_fastkan_image.err
 #SBATCH --export=ALL
 
 export MODEL=fastkan
-export SWEEP=tune_fastkan_mnist_blob
+export SWEEP=image/tune_fastkan
 export DATASETS="mnist gaussian_blob"
 source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
 
-# Submit: sbatch scripts/tune_fastkan_mnist_blob.submit
+# Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/image/tune_fastkan.submit
