@@ -1,7 +1,4 @@
 # @package _global_
-# Sweep config for tuning wavkan on the MNIST and Gaussian-Blob datasets.
-# Same search space as functional/tune_wavkan, but with a reduced epoch budget
-# and trial count appropriate for the (much) larger MNIST training set.
 defaults:
   - /sweep/tune_base
   - override /model: wavkan
@@ -12,7 +9,6 @@ training:
 
 hydra:
   sweeper:
-    n_trials: 50
     params:
       optimizer: choice(adam, adamw, sgd)
       model.wavelet_type: choice(mexican_hat, morlet, dog, meyer, shannon)

@@ -1,7 +1,4 @@
 # @package _global_
-# Sweep config for tuning efficientkan on the MNIST and Gaussian-Blob datasets.
-# Same search space as functional/tune_efficientkan, but with a reduced epoch
-# budget and trial count appropriate for the (much) larger MNIST training set.
 defaults:
   - /sweep/tune_base
   - override /model: efficientkan
@@ -12,7 +9,6 @@ training:
 
 hydra:
   sweeper:
-    n_trials: 50
     params:
       optimizer: choice(adam, adamw, sgd)
       model.grid_size: range(3, 51)
