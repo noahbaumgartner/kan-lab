@@ -1,0 +1,16 @@
+# @package _global_
+# Re-run sweep for FastKAN with [-3, 3] grid default and num_grids extended to 50
+# (matching EfficientKAN's grid_size sweep range).
+defaults:
+  - tune_base
+  - override /model: fastkan
+  - override /training: adam
+
+hydra:
+  sweeper:
+    params:
+      optimizer: choice(adam, adamw, sgd)
+      model.num_grids: range(4, 51)
+      optimizer.lr: tag(log, interval(0.001, 1.0))
+      ++optimizer.weight_decay: tag(log, interval(1e-6, 1e-2))
+      ++optimizer.momentum: interval(0.0, 0.99)

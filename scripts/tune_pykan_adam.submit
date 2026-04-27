@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --time=3-00:00:00
+#SBATCH --job-name=kan_tune_pykan_adam
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH --account=cai_ivs
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --mem=8G
+#SBATCH --output=/cluster/home/baumgnoa/log/%j_%N_tune_pykan_adam.out
+#SBATCH --error=/cluster/home/baumgnoa/log/%j_%N_tune_pykan_adam.err
+#SBATCH --export=ALL
+
+export MODEL=pykan
+export SWEEP=tune_pykan_adam
+export DATASETS="bessel expsin multiplication highdim deepformula feynman_i_6_2 feynman_i_6_2b feynman_i_9_18 feynman_i_12_11 feynman_i_13_12"
+source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
+
+# Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/tune_pykan_adam.submit

@@ -5,13 +5,21 @@ set -euo pipefail
 : "${MODEL:?MODEL must be set by the caller (e.g. MODEL=pykan)}"
 : "${EXPERIMENT:?EXPERIMENT must be set by the caller (MLflow experiment name)}"
 
-DATASETS=(
-  feynman_i_6_2
-  feynman_i_6_2b
-  feynman_i_9_18
-  feynman_i_12_11
-  feynman_i_13_12
-)
+# Optional overrides:
+#   SWEEP    — Hydra sweep name (default: tune_${MODEL})
+#   DATASETS — space-separated list of dataset names
+SWEEP="${SWEEP:-tune_${MODEL}}"
+if [[ -n "${DATASETS:-}" ]]; then
+  read -r -a DATASETS <<< "${DATASETS}"
+else
+  DATASETS=(
+    feynman_i_6_2
+    feynman_i_6_2b
+    feynman_i_9_18
+    feynman_i_12_11
+    feynman_i_13_12
+  )
+fi
 
 export PYTHONUNBUFFERED=1
 module load uv/0.10.10
@@ -37,7 +45,7 @@ echo "Using MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}"
 for dataset in "${DATASETS[@]}"; do
   echo "=== Tuning ${MODEL} on ${dataset} ==="
   HYDRA_FULL_ERROR=1 uv run main.py --multirun \
-    +sweep="tune_${MODEL}" \
+    +sweep="${SWEEP}" \
     dataset="${dataset}" \
     mlflow_tracking_uri="${MLFLOW_TRACKING_URI}" \
     +experiment="${EXPERIMENT}"

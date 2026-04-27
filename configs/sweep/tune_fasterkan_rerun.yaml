@@ -1,0 +1,17 @@
+# @package _global_
+# Re-run sweep for FasterKAN after grid_min/grid_max default change to [-3, 3].
+defaults:
+  - tune_base
+  - override /model: fasterkan
+  - override /training: adam
+
+hydra:
+  sweeper:
+    params:
+      optimizer: choice(adam, adamw, sgd)
+      model.num_grids: range(4, 51)
+      model.exponent: range(2, 5)
+      model.inv_denominator: interval(0.1, 1.0)
+      optimizer.lr: tag(log, interval(0.001, 1.0))
+      ++optimizer.weight_decay: tag(log, interval(1e-6, 1e-2))
+      ++optimizer.momentum: interval(0.0, 0.99)
