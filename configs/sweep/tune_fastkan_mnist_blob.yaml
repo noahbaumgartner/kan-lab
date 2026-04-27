@@ -1,0 +1,13 @@
+# @package _global_
+# Sweep config for tuning fastkan on the MNIST and Gaussian-Blob datasets.
+# Same search space as tune_fastkan, but with a reduced epoch budget that
+# is more appropriate for the (much) larger MNIST training set.
+defaults:
+  - tune_fastkan
+
+training:
+  epochs: 50
+
+hydra:
+  sweeper:
+    n_trials: 50

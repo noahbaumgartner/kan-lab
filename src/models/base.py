@@ -8,7 +8,6 @@ from tqdm import tqdm
 class BaseKANModel(ABC):
     model: torch.nn.Module | None = None
     device: str = "cpu"
-    reports_rmse: bool = False
 
     @abstractmethod
     def build(self, device: str = "cpu") -> None:

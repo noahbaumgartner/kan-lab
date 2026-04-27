@@ -4,8 +4,6 @@ from .base import BaseKANModel
 
 
 class PyKANModel(BaseKANModel):
-    reports_rmse = True
-
     def __init__(
         self,
         width,

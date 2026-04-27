@@ -112,23 +112,32 @@ class Trainer:
                 for step_i, (tl, vl) in enumerate(
                     zip(results["train_loss"], results["test_loss"])
                 ):
-                    train_rmse = float(tl) if model.reports_rmse else float(tl) ** 0.5
-                    test_rmse = float(vl) if model.reports_rmse else float(vl) ** 0.5
                     mlflow.log_metrics(
-                        {"train_rmse": train_rmse, "test_rmse": test_rmse},
+                        {
+                            "train_rmse": float(tl) ** 0.5,
+                            "test_rmse": float(vl) ** 0.5,
+                        },
                         step=step_i,
                     )
 
-                final_train = float(results["train_loss"][-1])
-                final_test = float(results["test_loss"][-1])
-                if not model.reports_rmse:
-                    final_train = final_train**0.5
-                    final_test = final_test**0.5
-                mlflow.log_metric("final_train_rmse", final_train)
-                mlflow.log_metric("final_test_rmse", final_test)
+                final_train_mse = float(results["train_loss"][-1])
+                final_test_mse = float(results["test_loss"][-1])
+                final_train_rmse = final_train_mse**0.5
+                final_test_rmse = final_test_mse**0.5
+                mlflow.log_metric("final_train_rmse", final_train_rmse)
+                mlflow.log_metric("final_test_rmse", final_test_rmse)
 
-                print(f"\nFinal Train RMSE: {final_train:.6f}")
-                print(f"Final Test RMSE:  {final_test:.6f}")
+                train_var = float(torch.var(dataset["train_label"], unbiased=False))
+                test_var = float(torch.var(dataset["test_label"], unbiased=False))
+                final_train_r2 = 1.0 - final_train_mse / train_var if train_var > 0 else float("nan")
+                final_test_r2 = 1.0 - final_test_mse / test_var if test_var > 0 else float("nan")
+                mlflow.log_metric("final_train_r2", final_train_r2)
+                mlflow.log_metric("final_test_r2", final_test_r2)
+
+                print(f"\nFinal Train RMSE: {final_train_rmse:.6f}")
+                print(f"Final Test RMSE:  {final_test_rmse:.6f}")
+                print(f"Final Train R²:   {final_train_r2:.6f}")
+                print(f"Final Test R²:    {final_test_r2:.6f}")
 
             mlflow.log_metric("training_time_sec", train_time)
 
