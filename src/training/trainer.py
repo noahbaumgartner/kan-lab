@@ -4,10 +4,12 @@ import time
 import numpy as np
 import torch
 import mlflow
+import matplotlib.pyplot as plt
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 
 from src import get_device
+from src.datasets.gaussian_blob import GaussianBlobDataset
 
 
 class Trainer:
@@ -72,7 +74,7 @@ class Trainer:
             # train
             t_start = time.time()
 
-            results = model.fit(
+            fit_kwargs = dict(
                 dataset=dataset,
                 epochs=cfg.training.epochs,
                 optimizer_factory=optimizer_factory,
@@ -81,6 +83,13 @@ class Trainer:
                 lamb=cfg.training.get("lamb", 0.0),
                 task_type=task_type,
             )
+
+            if isinstance(dataset_obj, GaussianBlobDataset):
+                fit_kwargs["epoch_callback"] = _make_blob_visualization_callback(
+                    dataset_obj, dataset, every=10
+                )
+
+            results = model.fit(**fit_kwargs)
 
             train_time = time.time() - t_start
 
@@ -142,6 +151,53 @@ class Trainer:
             mlflow.log_metric("training_time_sec", train_time)
 
         return results
+
+
+def _make_blob_visualization_callback(dataset_obj, dataset, every=10):
+    image_size = dataset_obj.image_size
+    sample_input = dataset["test_input"][:1]
+    sample_label = dataset["test_label"][:1]
+    gt_image = sample_input.detach().cpu().reshape(image_size, image_size).numpy()
+
+    def callback(epoch, model_wrapper):
+        if (epoch + 1) % every != 0:
+            return
+        was_training = model_wrapper.get_model().training
+        model_wrapper.get_model().eval()
+        with torch.no_grad():
+            pred_label = model_wrapper.predict(sample_input)
+            pred_image = GaussianBlobDataset.render_from_labels(
+                pred_label, image_size=image_size
+            )
+        if was_training:
+            model_wrapper.get_model().train()
+
+        pred_np = pred_image.detach().cpu().reshape(image_size, image_size).numpy()
+        gt_params = sample_label[0].detach().cpu().tolist()
+        pred_params = pred_label[0].detach().cpu().tolist()
+
+        vmax = max(gt_image.max(), pred_np.max(), 1e-6)
+        fig, axes = plt.subplots(1, 2, figsize=(6, 3))
+        axes[0].imshow(gt_image, vmin=0, vmax=vmax, cmap="viridis")
+        axes[0].set_title(
+            "ground truth\n"
+            f"x={gt_params[0]:.2f} y={gt_params[1]:.2f} "
+            f"w={gt_params[2]:.2f} a={gt_params[3]:.2f}"
+        )
+        axes[0].axis("off")
+        axes[1].imshow(pred_np, vmin=0, vmax=vmax, cmap="viridis")
+        axes[1].set_title(
+            "predicted\n"
+            f"x={pred_params[0]:.2f} y={pred_params[1]:.2f} "
+            f"w={pred_params[2]:.2f} a={pred_params[3]:.2f}"
+        )
+        axes[1].axis("off")
+        fig.suptitle(f"epoch {epoch + 1}")
+        fig.tight_layout()
+        mlflow.log_figure(fig, f"blob_compare/epoch_{epoch + 1:04d}.png")
+        plt.close(fig)
+
+    return callback
 
 
 _ADJECTIVES = [

@@ -34,6 +34,7 @@ class BaseKANModel(ABC):
         batch_size,
         lamb,
         task_type="regression",
+        epoch_callback=None,
         **kwargs,
     ):
         # Move data to device once, then build DataLoaders from on-device tensors
@@ -127,5 +128,8 @@ class BaseKANModel(ABC):
             if task_type == "classification":
                 results["train_acc"].append((train_correct_sum / train_total).item())
                 results["test_acc"].append((val_correct_sum / val_total).item())
+
+            if epoch_callback is not None:
+                epoch_callback(epoch, self)
 
         return results
