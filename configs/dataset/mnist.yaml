@@ -8,6 +8,11 @@ task_type: classification
 input_dim: 784
 output_dim: 10
 
+# image metadata (used by vision models e.g. KAT)
+img_size: 28
+in_chans: 1
+patch_size: 4
+
 n_hidden: 1
 n_hidden_min: 1
 n_hidden_max: 2

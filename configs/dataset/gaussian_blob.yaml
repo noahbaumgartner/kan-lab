@@ -8,6 +8,11 @@ task_type: regression
 input_dim: 100
 output_dim: 4
 
+# image metadata (used by vision models e.g. KAT)
+img_size: 10
+in_chans: 1
+patch_size: 2
+
 n_hidden: 1
 n_hidden_min: 1
 n_hidden_max: 3
