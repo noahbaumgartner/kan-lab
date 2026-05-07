@@ -43,7 +43,7 @@ class Trainer:
 
         # load dataset
         dataset_obj = instantiate(cfg.dataset)
-        dataset = dataset_obj.create(device=self.device)
+        dataset = dataset_obj.create()
 
         # build model
         model = instantiate(cfg.model)

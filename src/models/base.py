@@ -37,21 +37,18 @@ class BaseKANModel(ABC):
         epoch_callback=None,
         **kwargs,
     ):
-        # Move data to device once, then build DataLoaders from on-device tensors
-        # to avoid repeated CPU→GPU transfers every iteration.
-        train_input = dataset["train_input"].to(self.device)
-        train_label = dataset["train_label"].to(self.device)
-        test_input = dataset["test_input"].to(self.device)
-        test_label = dataset["test_label"].to(self.device)
-
-        train_ds = TensorDataset(train_input, train_label)
-        val_ds = TensorDataset(test_input, test_label)
+        # Datasets return CPU tensors; the DataLoader moves each batch to
+        # the model's device on demand. Preloading the full dataset to GPU
+        # OOMs for larger sets like MNIST.
+        train_ds = TensorDataset(dataset["train_input"], dataset["train_label"])
+        val_ds = TensorDataset(dataset["test_input"], dataset["test_label"])
 
         n_train = len(train_ds)
         bs = n_train if (batch_size == -1 or batch_size >= n_train) else batch_size
 
-        train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)
-        val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False)
+        pin = self.device != "cpu"
+        train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True, pin_memory=pin)
+        val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False, pin_memory=pin)
 
         opt = optimizer_factory(self.get_model().parameters())
         is_lbfgs = isinstance(opt, torch.optim.LBFGS)
@@ -70,6 +67,8 @@ class BaseKANModel(ABC):
             train_total = 0
 
             for x, y in train_loader:
+                x = x.to(device, non_blocking=True)
+                y = y.to(device, non_blocking=True)
                 if is_lbfgs:
                     captured = {}
 
@@ -113,6 +112,8 @@ class BaseKANModel(ABC):
             val_total = 0
             with torch.no_grad():
                 for x, y in val_loader:
+                    x = x.to(device, non_blocking=True)
+                    y = y.to(device, non_blocking=True)
                     pred = self.predict(x)
                     bs_x = x.shape[0]
                     val_loss_sum = val_loss_sum + loss_fn(pred, y) * bs_x

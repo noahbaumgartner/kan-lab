@@ -11,7 +11,7 @@ class ExpSinDataset:
         self.n_train = n_train
         self.n_test = n_test
 
-    def create(self, device="cpu"):
+    def create(self):
         f = lambda x: torch.exp(
             torch.sin(torch.pi * x[:, [0]]) + x[:, [1]] ** 2
         )
@@ -23,5 +23,5 @@ class ExpSinDataset:
             test_num=self.n_test,
             normalize_input=True,
             normalize_label=True,
-            device=device,
+            device="cpu",
         )

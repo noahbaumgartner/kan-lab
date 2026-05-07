@@ -32,19 +32,19 @@ class GaussianBlobDataset:
             -(dx**2 + dy**2) / (2 * width[:, None] ** 2)
         )
 
-    def _generate(self, n, device="cpu"):
+    def _generate(self, n):
         size = self.image_size
 
         # random blob parameters
-        x_center = torch.rand(n, device=device) * (size - 1)
-        y_center = torch.rand(n, device=device) * (size - 1)
-        width = torch.rand(n, device=device) * 2.0 + 0.5  # [0.5, 2.5]
-        amplitude = torch.rand(n, device=device) * 0.8 + 0.2  # [0.2, 1.0]
+        x_center = torch.rand(n) * (size - 1)
+        y_center = torch.rand(n) * (size - 1)
+        width = torch.rand(n) * 2.0 + 0.5  # [0.5, 2.5]
+        amplitude = torch.rand(n) * 0.8 + 0.2  # [0.2, 1.0]
 
         # pixel grid
         yy, xx = torch.meshgrid(
-            torch.arange(size, dtype=torch.float32, device=device),
-            torch.arange(size, dtype=torch.float32, device=device),
+            torch.arange(size, dtype=torch.float32),
+            torch.arange(size, dtype=torch.float32),
             indexing="ij",
         )
         xx = xx.flatten()  # (100,)
@@ -70,9 +70,9 @@ class GaussianBlobDataset:
 
         return images, labels
 
-    def create(self, device="cpu"):
-        train_input, train_label = self._generate(self.n_train, device)
-        test_input, test_label = self._generate(self.n_test, device)
+    def create(self):
+        train_input, train_label = self._generate(self.n_train)
+        test_input, test_label = self._generate(self.n_test)
         return {
             "train_input": train_input,
             "train_label": train_label,

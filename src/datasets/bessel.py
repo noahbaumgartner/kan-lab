@@ -13,7 +13,7 @@ class BesselDataset:
         self.n_train = n_train
         self.n_test = n_test
 
-    def create(self, device="cpu"):
+    def create(self):
         return create_dataset(
             self.f,
             n_var=self.input_dim,
@@ -22,5 +22,5 @@ class BesselDataset:
             test_num=self.n_test,
             normalize_input=True,
             normalize_label=True,
-            device=device,
+            device="cpu",
         )

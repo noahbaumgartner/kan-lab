@@ -11,7 +11,7 @@ class DeepFormulaDataset:
         self.n_train = n_train
         self.n_test = n_test
 
-    def create(self, device="cpu"):
+    def create(self):
         f = lambda x: torch.exp(
             0.5
             * (
@@ -27,5 +27,5 @@ class DeepFormulaDataset:
             test_num=self.n_test,
             normalize_input=True,
             normalize_label=True,
-            device=device,
+            device="cpu",
         )

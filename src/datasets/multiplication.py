@@ -11,7 +11,7 @@ class MultiplicationDataset:
         self.n_train = n_train
         self.n_test = n_test
 
-    def create(self, device="cpu"):
+    def create(self):
         f = lambda x: x[:, [0]] * x[:, [1]]
         return create_dataset(
             f,
@@ -21,5 +21,5 @@ class MultiplicationDataset:
             test_num=self.n_test,
             normalize_input=True,
             normalize_label=True,
-            device=device,
+            device="cpu",
         )
