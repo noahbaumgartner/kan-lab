@@ -11,6 +11,7 @@ hydra:
   sweeper:
     params:
       optimizer: choice(adam, adamw, sgd)
+      training.batch_size: choice(32, 64, 128, 256, 512)
       model.grid_size: range(3, 51)
       model.hidden_dim: range(32, 257)
       optimizer.lr: tag(log, interval(0.001, 1.0))
