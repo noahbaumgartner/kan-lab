@@ -1,14 +1,23 @@
 # @package _global_
 defaults:
-  - /sweep/tune_base
+  - override /hydra/sweeper: optuna
+  - override /hydra/sweeper/sampler: tpe
   - override /model: kanc_mlp
   - override /training: adam
+
+seed: 42
 
 training:
   epochs: 100
 
 hydra:
   sweeper:
+    sampler:
+      seed: ${seed}
+    direction: minimize
+
+    n_trials: 100
+    n_jobs: 1
     params:
       optimizer: choice(adam, adamw, sgd)
       training.batch_size: choice(32, 64, 128, 256, 512)

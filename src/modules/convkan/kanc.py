@@ -1,5 +1,4 @@
 from torch import nn
-import torch.nn.functional as F
 
 from .kanconv import KAN_Convolutional_Layer
 
@@ -45,5 +44,4 @@ class KANC_MLP(nn.Module):
         x = self.pool(self.conv2(x))
         x = self.flat(x)
         x = self.linear1(x)
-        x = self.linear2(x)
-        return F.log_softmax(x, dim=1)
+        return self.linear2(x)
