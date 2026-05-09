@@ -20,8 +20,8 @@ hydra:
     n_jobs: 1
     params:
       optimizer: choice(adam, adamw, sgd)
-      training.batch_size: choice(32, 64, 128, 256, 512)
-      model.grid_size: range(3, 51)
+      training.batch_size: choice(16, 32, 64, 128)
+      model.grid_size: range(3, 21)
       model.hidden_dim: range(32, 257)
       optimizer.lr: tag(log, interval(0.001, 1.0))
       ++optimizer.weight_decay: tag(log, interval(1e-6, 1e-2))
