@@ -13,7 +13,7 @@
 
 export MODEL=kanc_mlp
 export SWEEP=image/tune_kanc_mlp
-export DATASETS="mnist gaussian_blob"
+export DATASETS="${DATASETS:-mnist gaussian_blob}"
 source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
 
 # Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/image/tune_kanc_mlp.submit
