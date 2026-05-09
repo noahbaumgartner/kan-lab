@@ -8,7 +8,7 @@ defaults:
 seed: 42
 
 training:
-  epochs: 50
+  epochs: 100
 
 dataset:
   n_train: 5000
