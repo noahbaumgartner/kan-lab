@@ -28,6 +28,8 @@ cd /cluster/home/baumgnoa/kan-lab
 export UV_PROJECT_ENVIRONMENT=/cluster/home/baumgnoa/kan-lab/.venv
 
 # Ensure a uv-managed Python is available (ships with headers Triton needs).
+export UV_PYTHON_DOWNLOADS=manual
+export UV_PYTHON_PREFERENCE=only-managed
 uv python install 3.12
 
 # If an existing venv is built against system Python, recreate it so Triton can find Python.h.
