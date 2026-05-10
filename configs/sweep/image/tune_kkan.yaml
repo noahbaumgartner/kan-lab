@@ -10,10 +10,6 @@ seed: 42
 training:
   epochs: 100
 
-dataset:
-  n_train: 5000
-  n_test: 1000
-
 hydra:
   sweeper:
     sampler:
