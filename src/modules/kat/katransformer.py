@@ -36,8 +36,6 @@ __all__ = ['KAT']  # model_registry will add each entrypoint fn to this
 
 _logger = logging.getLogger(__name__)
 
-import sys
-sys.path.insert(0, 'rational_kat_cu')
 from kat_rational import KAT_Group
 
 

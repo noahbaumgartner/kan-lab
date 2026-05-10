@@ -1337,7 +1337,7 @@ requires-dist = [
     { name = "hydra-optuna-sweeper", specifier = ">=1.2" },
     { name = "ipykernel", specifier = ">=6.0" },
     { name = "jupyter", specifier = ">=1.0" },
-    { name = "kat-rational", git = "https://github.com/Adamdad/rational_kat_cu.git" },
+    { name = "kat-rational", git = "https://github.com/noahbaumgartner/rational_kat_cu.git" },
     { name = "matplotlib", specifier = ">=3.8" },
     { name = "mlflow", specifier = ">=3.0" },
     { name = "numpy", specifier = ">=1.26" },
@@ -1356,7 +1356,7 @@ requires-dist = [
 [[package]]
 name = "kat-rational"
 version = "0.4"
-source = { git = "https://github.com/Adamdad/rational_kat_cu.git#181bae8baf19075bef94b5f62dac320b3d4b27d3" }
+source = { git = "https://github.com/noahbaumgartner/rational_kat_cu.git#1040061cbc5d9065200d92735265df1197672e22" }
 
 [[package]]
 name = "kiwisolver"
