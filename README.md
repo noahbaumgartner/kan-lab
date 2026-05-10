@@ -67,10 +67,11 @@ These datasets are from the foundational KAN paper ([arXiv:2404.19756](https://a
 
 The following KAN variants are implemented in this project. The module code in `src/modules/` is copied from the respective repositories.
 
-| Model        | Config name     | Repository                                                                  | Paper                                                |
-| ------------ | --------------- | --------------------------------------------------------------------------- | ---------------------------------------------------- |
-| PyKAN        | `pykan`         | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                 | [arXiv:2404.19756](https://arxiv.org/abs/2404.19756) |
-| EfficientKAN | `efficientkan`  | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)         | -                                                    |
-| FastKAN      | `fastkan`       | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                     | [arXiv:2405.06721](https://arxiv.org/abs/2405.06721) |
-| FasterKAN    | `fasterkan`     | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan) | -                                                    |
-| WavKAN       | `wavkan`        | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                     | [arXiv:2405.12832](https://arxiv.org/abs/2405.12832) |
+| Model        | Config name    | Repository                                                                                | Paper                                                |
+| ------------ | -------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| PyKAN        | `pykan`        | [KindXiaoming/pykan](https://github.com/KindXiaoming/pykan)                               | [arXiv:2404.19756](https://arxiv.org/abs/2404.19756) |
+| EfficientKAN | `efficientkan` | [Blealtan/efficient-kan](https://github.com/Blealtan/efficient-kan)                       | -                                                    |
+| FastKAN      | `fastkan`      | [ZiyaoLi/fast-kan](https://github.com/ZiyaoLi/fast-kan)                                   | [arXiv:2405.06721](https://arxiv.org/abs/2405.06721) |
+| FasterKAN    | `fasterkan`    | [AthanasiosDelis/faster-kan](https://github.com/AthanasiosDelis/faster-kan)               | -                                                    |
+| WavKAN       | `wavkan`       | [zavareh1/Wav-KAN](https://github.com/zavareh1/Wav-KAN)                                   | [arXiv:2405.12832](https://arxiv.org/abs/2405.12832) |
+| KKAN         | `kkan`         | [AntonioTepsich/Convolutional-KANs](https://github.com/AntonioTepsich/Convolutional-KANs) | [arXiv:2406.13155](https://arxiv.org/abs/2406.13155) |
