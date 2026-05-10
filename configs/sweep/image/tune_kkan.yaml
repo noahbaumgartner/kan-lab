@@ -8,7 +8,7 @@ defaults:
 seed: 42
 
 training:
-  epochs: 100
+  epochs: 20
 
 hydra:
   sweeper:
