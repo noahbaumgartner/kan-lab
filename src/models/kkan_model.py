@@ -87,6 +87,7 @@ class KKANModel(BaseKANModel):
         self.device = device
 
     def predict(self, x: torch.Tensor, update_grid: bool = False) -> torch.Tensor:
+        x = x.to(self.device)
         if x.dim() == 2:
             x = x.view(-1, self.in_chans, self.img_size, self.img_size)
         elif x.dim() == 3:
