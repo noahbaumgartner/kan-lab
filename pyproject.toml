@@ -28,6 +28,7 @@ dependencies = [
 
 [tool.uv]
 python-preference = "only-managed"
+python-downloads = "manual"
 
 [tool.uv.sources]
 kat-rational = { git = "https://github.com/noahbaumgartner/rational_kat_cu.git" }
