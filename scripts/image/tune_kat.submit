@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH --time=3-00:00:00
+#SBATCH --job-name=kan_tune_kat_image
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH --account=cai_ivs
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --mem=8G
+#SBATCH --output=/cluster/home/baumgnoa/log/%j_%N_tune_kat_image.out
+#SBATCH --error=/cluster/home/baumgnoa/log/%j_%N_tune_kat_image.err
+#SBATCH --export=ALL
+
+export MODEL=kat
+export SWEEP=image/tune_kat
+export DATASETS="${DATASETS:-mnist gaussian_blob}"
+
+# Per-dataset Hydra overrides (space-separated). Only applied when that dataset runs.
+export EXTRA_mnist="dataset.n_train=10000 dataset.n_test=1000"
+
+source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
+
+# Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/image/tune_kat.submit
+# Single dataset: sbatch --export=ALL,EXPERIMENT=<name>,DATASETS=gaussian_blob scripts/image/tune_kat.submit
