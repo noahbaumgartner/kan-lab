@@ -165,7 +165,8 @@ def _make_blob_visualization_callback(dataset_obj, dataset, every=10):
         was_training = model_wrapper.get_model().training
         model_wrapper.get_model().eval()
         with torch.no_grad():
-            pred_label = model_wrapper.predict(sample_input)
+            device = next(model_wrapper.get_model().parameters()).device
+            pred_label = model_wrapper.predict(sample_input.to(device))
             pred_image = GaussianBlobDataset.render_from_labels(
                 pred_label, image_size=image_size
             )
