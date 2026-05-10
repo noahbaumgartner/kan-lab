@@ -26,6 +26,9 @@ dependencies = [
     "einops>=0.7",
 ]
 
+[tool.uv]
+python-preference = "only-managed"
+
 [tool.uv.sources]
 kat-rational = { git = "https://github.com/noahbaumgartner/rational_kat_cu.git" }
 

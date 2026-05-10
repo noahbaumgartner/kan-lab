@@ -26,6 +26,19 @@ module load uv/0.10.10
 cd /cluster/home/baumgnoa/kan-lab
 
 export UV_PROJECT_ENVIRONMENT=/cluster/home/baumgnoa/kan-lab/.venv
+
+# Ensure a uv-managed Python is available (ships with headers Triton needs).
+uv python install 3.12
+
+# If an existing venv is built against system Python, recreate it so Triton can find Python.h.
+if [[ -d "${UV_PROJECT_ENVIRONMENT}" ]]; then
+  base_prefix=$("${UV_PROJECT_ENVIRONMENT}/bin/python" -c "import sys; print(sys.base_prefix)" 2>/dev/null || echo "")
+  if [[ "${base_prefix}" != *"/uv/python/"* ]]; then
+    echo "Recreating venv with uv-managed Python (was: ${base_prefix:-missing})"
+    rm -rf "${UV_PROJECT_ENVIRONMENT}"
+  fi
+fi
+
 uv sync
 
 # Wait for the mlflow server job to publish its URL.
