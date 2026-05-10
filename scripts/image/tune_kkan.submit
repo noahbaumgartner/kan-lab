@@ -13,7 +13,7 @@
 
 export MODEL=kkan
 export SWEEP=image/tune_kkan
-export DATASETS="${DATASETS:-mnist}"
+export DATASETS="${DATASETS:-mnist gaussian_blob}"
 source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
 
 # Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/image/tune_kkan.submit
