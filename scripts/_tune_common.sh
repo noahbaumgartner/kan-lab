@@ -44,9 +44,16 @@ echo "Using MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}"
 
 for dataset in "${DATASETS[@]}"; do
   echo "=== Tuning ${MODEL} on ${dataset} ==="
+  per_dataset_extra="EXTRA_${dataset}"
+  extra=()
+  if [[ -n "${!per_dataset_extra:-}" ]]; then
+    # shellcheck disable=SC2206
+    extra=(${!per_dataset_extra})
+  fi
   HYDRA_FULL_ERROR=1 uv run main.py --multirun \
     +sweep="${SWEEP}" \
     dataset="${dataset}" \
+    "${extra[@]}" \
     mlflow_tracking_uri="${MLFLOW_TRACKING_URI}" \
     +experiment="${EXPERIMENT}"
 done

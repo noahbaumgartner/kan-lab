@@ -14,6 +14,10 @@
 export MODEL=kkan
 export SWEEP=image/tune_kkan
 export DATASETS="${DATASETS:-mnist gaussian_blob}"
+
+# Per-dataset Hydra overrides (space-separated). Only applied when that dataset runs.
+export EXTRA_mnist="dataset.n_train=10000 dataset.n_test=1000"
+
 source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
 
 # Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/image/tune_kkan.submit
