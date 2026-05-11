@@ -1,10 +1,10 @@
-import torch
 from torchvision import datasets, transforms
 
 
 class MNISTDataset:
     input_dim = 784
     output_dim = 10
+
     def __init__(self, n_train=60000, n_test=10000, **kwargs):
         self.n_train = n_train
         self.n_test = n_test
