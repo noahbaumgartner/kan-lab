@@ -63,6 +63,10 @@ class PyKANModel(BaseKANModel):
         task_type="regression",
         **kwargs,
     ):
+        dataset = {
+            k: v.to(self.device) if torch.is_tensor(v) else v
+            for k, v in dataset.items()
+        }
         self.model.update_grid_from_samples(dataset["train_input"])
 
         metrics = self._make_metrics(dataset, task_type)
