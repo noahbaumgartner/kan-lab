@@ -67,10 +67,8 @@ class PyKANModel(BaseKANModel):
             k: v.to(self.device) if torch.is_tensor(v) else v
             for k, v in dataset.items()
         }
-        self.model.update_grid_from_samples(dataset["train_input"])
 
         metrics = self._make_metrics(dataset, task_type)
-
         fit_kwargs = dict(
             opt=getattr(optimizer_factory, "PYKAN_OPT", "Adam"),
             lr=optimizer_factory.lr,
