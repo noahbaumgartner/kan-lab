@@ -29,26 +29,26 @@ class PyKANModel(BaseKANModel):
             device=device,
         )
 
-    def _make_metrics(self, dataset, task_type):
+    def _make_metrics(self, dataset, task_type, eval_batch_size=1024):
         if task_type != "classification":
             return None
         model_ref = self.model
 
+        def _batched_acc(inputs, labels):
+            correct = 0
+            total = inputs.shape[0]
+            with torch.no_grad():
+                for start in range(0, total, eval_batch_size):
+                    end = start + eval_batch_size
+                    preds = torch.argmax(model_ref(inputs[start:end]), dim=1)
+                    correct += (preds == labels[start:end]).sum().item()
+            return torch.tensor(correct / max(total, 1))
+
         def train_acc():
-            return torch.mean(
-                (
-                    torch.argmax(model_ref(dataset["train_input"]), dim=1)
-                    == dataset["train_label"]
-                ).float()
-            )
+            return _batched_acc(dataset["train_input"], dataset["train_label"])
 
         def test_acc():
-            return torch.mean(
-                (
-                    torch.argmax(model_ref(dataset["test_input"]), dim=1)
-                    == dataset["test_label"]
-                ).float()
-            )
+            return _batched_acc(dataset["test_input"], dataset["test_label"])
 
         return (train_acc, test_acc)
 
