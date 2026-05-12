@@ -1,0 +1,17 @@
+# @package _global_
+# PyKAN sweep on image datasets restricted to the Adam optimizer.
+defaults:
+  - /sweep/tune_base
+  - override /model: pykan
+  - override /optimizer: adam
+  - override /training: adam
+
+training:
+  epochs: 100
+
+hydra:
+  sweeper:
+    params:
+      model.grid: range(3, 51)
+      optimizer.lr: tag(log, interval(1e-5, 1e-1))
+      training.lamb: tag(log, interval(1e-5, 0.1))
