@@ -4,9 +4,9 @@ set -euo pipefail
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 <experiment_name>" >&2
   echo "  Submits one SLURM tuning job per KAN model (efficientkan, fastkan," >&2
-  echo "  wavkan, kkan), each sweeping over the MNIST and Gaussian-Blob" >&2
-  echo "  datasets. The experiment_name is used as the MLflow experiment for" >&2
-  echo "  all runs." >&2
+  echo "  wavkan, kkan), each sweeping over the MNIST, Fashion-MNIST and" >&2
+  echo "  Gaussian-Blob datasets. The experiment_name is used as the MLflow" >&2
+  echo "  experiment for all runs." >&2
   exit 1
 fi
 

@@ -13,7 +13,7 @@
 
 export MODEL=wavkan
 export SWEEP=image/tune_wavkan
-export DATASETS="${DATASETS:-mnist gaussian_blob}"
+export DATASETS="${DATASETS:-mnist fashion_mnist gaussian_blob}"
 source /cluster/home/baumgnoa/kan-lab/scripts/_tune_common.sh
 
 # Submit: sbatch --export=ALL,EXPERIMENT=<name> scripts/image/tune_wavkan.submit

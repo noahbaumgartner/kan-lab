@@ -5,4 +5,5 @@ from .highdim import HighDimDataset
 from .deepformula import DeepFormulaDataset
 from .feynman import FeynmanDataset
 from .mnist import MNISTDataset
+from .fashion_mnist import FashionMNISTDataset
 from .gaussian_blob import GaussianBlobDataset

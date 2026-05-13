@@ -13,7 +13,7 @@
 
 export MODEL=kkan
 export SWEEP=image/tune_kkan
-export DATASETS="${DATASETS:-mnist gaussian_blob}"
+export DATASETS="${DATASETS:-mnist fashion_mnist gaussian_blob}"
 
 # Per-dataset Hydra overrides (space-separated). Only applied when that dataset runs.
 export EXTRA_mnist="dataset.n_train=10000 dataset.n_test=1000"
