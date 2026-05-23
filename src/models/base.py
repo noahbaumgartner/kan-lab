@@ -65,8 +65,13 @@ class BaseKANModel(ABC):
         bs = n_train if (batch_size == -1 or batch_size >= n_train) else batch_size
 
         pin = self.device != "cpu"
-        train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True, pin_memory=pin)
-        val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False, pin_memory=pin)
+        nw = int(kwargs.get("num_workers", 0))
+        loader_kwargs = dict(pin_memory=pin, num_workers=nw)
+        if nw > 0:
+            loader_kwargs["persistent_workers"] = True
+            loader_kwargs["prefetch_factor"] = int(kwargs.get("prefetch_factor", 4))
+        train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True, **loader_kwargs)
+        val_loader = DataLoader(val_ds, batch_size=bs, shuffle=False, **loader_kwargs)
 
         opt = optimizer_factory(self.get_model().parameters())
         is_lbfgs = isinstance(opt, torch.optim.LBFGS)

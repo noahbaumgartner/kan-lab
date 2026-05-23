@@ -82,6 +82,8 @@ class Trainer:
                 batch_size=cfg.training.get("batch_size", -1),
                 lamb=cfg.training.get("lamb", 0.0),
                 task_type=task_type,
+                num_workers=cfg.training.get("num_workers", 0),
+                prefetch_factor=cfg.training.get("prefetch_factor", 4),
             )
 
             if isinstance(dataset_obj, GaussianBlobDataset):
@@ -136,10 +138,31 @@ class Trainer:
                 mlflow.log_metric("final_train_rmse", final_train_rmse)
                 mlflow.log_metric("final_test_rmse", final_test_rmse)
 
-                train_var = float(torch.var(dataset["train_label"], unbiased=False))
-                test_var = float(torch.var(dataset["test_label"], unbiased=False))
-                final_train_r2 = 1.0 - final_train_mse / train_var if train_var > 0 else float("nan")
-                final_test_r2 = 1.0 - final_test_mse / test_var if test_var > 0 else float("nan")
+                # R² needs the label variance. Datasets may expose labels as
+                # tensors (legacy), numpy arrays (weak_lensing), or omit the
+                # test labels entirely (test set without ground truth).
+                # "val_label" takes precedence over "test_label" when both
+                # are present.
+                def _label_var(obj):
+                    if obj is None:
+                        return float("nan")
+                    if not isinstance(obj, torch.Tensor):
+                        obj = torch.as_tensor(obj)
+                    return float(torch.var(obj, unbiased=False))
+
+                train_var = _label_var(dataset.get("train_label"))
+                test_label = dataset.get("val_label", dataset.get("test_label"))
+                test_var = _label_var(test_label)
+                final_train_r2 = (
+                    1.0 - final_train_mse / train_var
+                    if train_var and train_var > 0
+                    else float("nan")
+                )
+                final_test_r2 = (
+                    1.0 - final_test_mse / test_var
+                    if test_var and test_var > 0
+                    else float("nan")
+                )
                 mlflow.log_metric("final_train_r2", final_train_r2)
                 mlflow.log_metric("final_test_r2", final_test_r2)
 
