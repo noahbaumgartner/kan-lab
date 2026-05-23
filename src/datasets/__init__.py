@@ -7,3 +7,4 @@ from .feynman import FeynmanDataset
 from .mnist import MNISTDataset
 from .fashion_mnist import FashionMNISTDataset
 from .gaussian_blob import GaussianBlobDataset
+from .weak_lensing import WeakLensingDataset

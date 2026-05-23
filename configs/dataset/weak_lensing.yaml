@@ -1,0 +1,29 @@
+_target_: src.datasets.weak_lensing.WeakLensingDataset
+
+# Path to the .npy files released by the FAIR-Universe challenge.
+data_dir: /cluster/projects/ska/weak-lensing/data/
+use_public_dataset: true
+
+# Labels: keep (Omega_m, S_8) — the 2 cosmological parameters.
+n_targets: 2
+
+# Recommended split along the nuisance-parameter axis (axis=1).
+val_fraction: 0.2
+split_seed: 5566
+
+# noise_seed: null -> fresh shape-noise every epoch (augmentation).
+noise_seed: null
+ng: 30.0
+pixel_size_arcmin: 2.0
+standardize: true
+
+task_type: regression
+
+# image metadata (used by vision models e.g. CNN / KAT)
+img_height: 1424
+img_width: 176
+in_chans: 1
+output_dim: 2
+
+# Predicting (mean, sigma) for each cosmological parameter -> 4 outputs.
+num_targets: 4
