@@ -23,7 +23,21 @@ task_type: regression
 img_height: 1424
 img_width: 176
 in_chans: 1
+
+# MLP-style KANs flatten the input; with pool_stride=8 the map shrinks to
+# ceil(1424/8) * ceil(176/8) = 178 * 22 = 3916 pixels. Keep these consistent
+# with model.pool_stride below.
+pool_stride: 8
+input_dim: 3916          # 178 * 22 after AvgPool2d(stride=8)
 output_dim: 2
 
 # Predicting (mean, sigma) for each cosmological parameter -> 4 outputs.
 num_targets: 4
+
+# Width / depth knobs consumed by configs/model/efficientkan.yaml.
+n_hidden: 2
+n_hidden_min: 1
+n_hidden_max: 3
+hidden_width_min: 128
+hidden_width_max: 512
+

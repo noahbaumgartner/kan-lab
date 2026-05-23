@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 from tqdm import tqdm
 
 
@@ -40,8 +40,26 @@ class BaseKANModel(ABC):
         # Datasets return CPU tensors; the DataLoader moves each batch to
         # the model's device on demand. Preloading the full dataset to GPU
         # OOMs for larger sets like MNIST.
-        train_ds = TensorDataset(dataset["train_input"], dataset["train_label"])
-        val_ds = TensorDataset(dataset["test_input"], dataset["test_label"])
+        #
+        # Two input conventions are supported:
+        #   1. legacy: dataset["train_input"] / ["train_label"] are tensors
+        #      and we wrap them in a TensorDataset here.
+        #   2. lazy:   dataset["train_input"] is already a torch Dataset
+        #      yielding (x, y) — used by datasets that can't fit fully in
+        #      RAM (e.g. weak_lensing). Labels live on the Dataset itself.
+        # Validation uses "val_input" if provided, else falls back to
+        # "test_input" (the older convention).
+        ti = dataset["train_input"]
+        vi = dataset.get("val_input", dataset.get("test_input"))
+        if isinstance(ti, Dataset):
+            train_ds = ti
+        else:
+            train_ds = TensorDataset(ti, dataset["train_label"])
+        if isinstance(vi, Dataset):
+            val_ds = vi
+        else:
+            vl = dataset.get("val_label", dataset.get("test_label"))
+            val_ds = TensorDataset(vi, vl)
 
         n_train = len(train_ds)
         bs = n_train if (batch_size == -1 or batch_size >= n_train) else batch_size
