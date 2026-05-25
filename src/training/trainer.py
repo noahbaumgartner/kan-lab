@@ -24,6 +24,20 @@ class Trainer:
     def _create_loss_fn(self, task_type):
         if task_type == "classification":
             return torch.nn.CrossEntropyLoss()
+        if task_type == "regression_gnll":
+            # Heteroscedastic Gaussian NLL. Pred is laid out as
+            # [mu_1, ..., mu_n, log_var_1, ..., log_var_n]. We clamp log_var
+            # to keep exp(-log_var) finite when the net briefly drives it to
+            # the extremes early in training.
+            def gnll(pred, target):
+                n = target.shape[-1]
+                mu = pred[..., :n]
+                log_var = pred[..., n : 2 * n].clamp(-10.0, 10.0)
+                return 0.5 * (
+                    torch.exp(-log_var) * (target - mu) ** 2 + log_var
+                ).mean()
+
+            return gnll
         return lambda pred, target: torch.mean((pred - target) ** 2)
 
     @staticmethod
@@ -120,19 +134,46 @@ class Trainer:
                 mlflow.log_metric("final_train_acc", float(results["train_acc"][-1]))
                 mlflow.log_metric("final_test_acc", float(results["test_acc"][-1]))
             else:
+                is_gnll = task_type == "regression_gnll"
+                loss_name = "nll" if is_gnll else "rmse"
                 for step_i, (tl, vl) in enumerate(
                     zip(results["train_loss"], results["test_loss"])
                 ):
-                    mlflow.log_metrics(
-                        {
-                            "train_rmse": float(tl) ** 0.5,
-                            "test_rmse": float(vl) ** 0.5,
-                        },
-                        step=step_i,
-                    )
+                    if is_gnll:
+                        # results store NLL directly; RMSE doesn't apply.
+                        mlflow.log_metrics(
+                            {"train_nll": float(tl), "test_nll": float(vl)},
+                            step=step_i,
+                        )
+                    else:
+                        mlflow.log_metrics(
+                            {
+                                "train_rmse": float(tl) ** 0.5,
+                                "test_rmse": float(vl) ** 0.5,
+                            },
+                            step=step_i,
+                        )
 
-                final_train_mse = float(results["train_loss"][-1])
-                final_test_mse = float(results["test_loss"][-1])
+                if is_gnll:
+                    # The per-epoch "loss" is the NLL; the actual RMSE/R² and
+                    # the coverage metrics need real predictions. Run one
+                    # final eval pass over train + val to collect (mu, sigma).
+                    final_train_mse, _, _ = _gnll_eval(
+                        model, dataset, "train", self.device
+                    )
+                    (
+                        final_test_mse,
+                        coverage_68,
+                        coverage_95,
+                    ) = _gnll_eval(model, dataset, "val", self.device)
+                    mlflow.log_metric("final_train_nll", float(results["train_loss"][-1]))
+                    mlflow.log_metric("final_test_nll", float(results["test_loss"][-1]))
+                    mlflow.log_metric("coverage_68", coverage_68)
+                    mlflow.log_metric("coverage_95", coverage_95)
+                else:
+                    final_train_mse = float(results["train_loss"][-1])
+                    final_test_mse = float(results["test_loss"][-1])
+
                 final_train_rmse = final_train_mse**0.5
                 final_test_rmse = final_test_mse**0.5
                 mlflow.log_metric("final_train_rmse", final_train_rmse)
@@ -170,10 +211,59 @@ class Trainer:
                 print(f"Final Test RMSE:  {final_test_rmse:.6f}")
                 print(f"Final Train R²:   {final_train_r2:.6f}")
                 print(f"Final Test R²:    {final_test_r2:.6f}")
+                if is_gnll:
+                    print(f"Coverage 68 %:    {coverage_68:.4f}  (target 0.68)")
+                    print(f"Coverage 95 %:    {coverage_95:.4f}  (target 0.95)")
 
             mlflow.log_metric("training_time_sec", train_time)
 
         return results
+
+
+def _gnll_eval(model, dataset, split, device, batch_size=64):
+    """Run a final eval pass on the GNLL head and return (MSE_on_mu, cov_68, cov_95).
+
+    Uses absolute residuals against k*sigma to compute coverage. Coverage at the
+    1-sigma level should be ~0.68 and at 2-sigma ~0.95 when well-calibrated.
+    """
+    from torch.utils.data import DataLoader, Dataset, TensorDataset
+
+    inputs = dataset[f"{split}_input"]
+    labels = dataset[f"{split}_label"]
+    if isinstance(inputs, Dataset):
+        ds = inputs
+    else:
+        ds = TensorDataset(
+            inputs if isinstance(inputs, torch.Tensor) else torch.as_tensor(inputs),
+            labels if isinstance(labels, torch.Tensor) else torch.as_tensor(labels),
+        )
+    loader = DataLoader(ds, batch_size=batch_size, shuffle=False)
+
+    model.get_model().eval()
+    sq_err_sum = 0.0
+    in_1_sum = 0.0
+    in_2_sum = 0.0
+    n_total = 0
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(device, non_blocking=True)
+            y = y.to(device, non_blocking=True).float()
+            pred = model.predict(x)
+            n = y.shape[-1]
+            mu = pred[..., :n]
+            log_var = pred[..., n : 2 * n].clamp(-10.0, 10.0)
+            sigma = torch.exp(0.5 * log_var)
+
+            sq_err_sum += float(((mu - y) ** 2).sum())
+            abs_err = (mu - y).abs()
+            in_1_sum += float((abs_err <= sigma).float().sum())
+            in_2_sum += float((abs_err <= 2.0 * sigma).float().sum())
+            n_total += y.numel()  # counts per-parameter, matches *.sum()
+
+    mse = sq_err_sum / max(n_total, 1)
+    cov_68 = in_1_sum / max(n_total, 1)
+    cov_95 = in_2_sum / max(n_total, 1)
+    return mse, cov_68, cov_95
 
 
 def _make_blob_visualization_callback(dataset_obj, dataset, every=10):
