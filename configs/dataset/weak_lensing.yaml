@@ -17,10 +17,7 @@ ng: 30.0
 pixel_size_arcmin: 2.0
 standardize: true
 
-# Heteroscedastic Gaussian NLL: model emits (mu_1, mu_2, log_var_1, log_var_2)
-# so we can score coverage like the Codabench leaderboard. Switch back to
-# "regression" for plain MSE training.
-task_type: regression_gnll
+task_type: regression
 
 # image metadata (used by vision models e.g. CNN / KAT)
 img_height: 1424
@@ -32,11 +29,10 @@ in_chans: 1
 # with model.pool_stride below.
 pool_stride: 8
 input_dim: 3916          # 178 * 22 after AvgPool2d(stride=8)
+output_dim: 2
 
-# 2 means + 2 log-variances for (Omega_m, S_8). The trainer slices the first
-# 2 outputs as the point estimates and the last 2 as log-variances.
-output_dim: 4
-n_targets_actual: 2
+# Predicting (mean, sigma) for each cosmological parameter -> 4 outputs.
+num_targets: 4
 
 # Width / depth knobs consumed by configs/model/efficientkan.yaml.
 n_hidden: 2
