@@ -125,6 +125,8 @@ class Trainer:
                 ):
                     mlflow.log_metrics(
                         {
+                            "train_mse": float(tl),
+                            "test_mse": float(vl),
                             "train_rmse": float(tl) ** 0.5,
                             "test_rmse": float(vl) ** 0.5,
                         },
@@ -135,6 +137,8 @@ class Trainer:
                 final_test_mse = float(results["test_loss"][-1])
                 final_train_rmse = final_train_mse**0.5
                 final_test_rmse = final_test_mse**0.5
+                mlflow.log_metric("final_train_mse", final_train_mse)
+                mlflow.log_metric("final_test_mse", final_test_mse)
                 mlflow.log_metric("final_train_rmse", final_train_rmse)
                 mlflow.log_metric("final_test_rmse", final_test_rmse)
 
@@ -166,7 +170,9 @@ class Trainer:
                 mlflow.log_metric("final_train_r2", final_train_r2)
                 mlflow.log_metric("final_test_r2", final_test_r2)
 
-                print(f"\nFinal Train RMSE: {final_train_rmse:.6f}")
+                print(f"\nFinal Train MSE:  {final_train_mse:.6f}")
+                print(f"Final Test MSE:   {final_test_mse:.6f}")
+                print(f"Final Train RMSE: {final_train_rmse:.6f}")
                 print(f"Final Test RMSE:  {final_test_rmse:.6f}")
                 print(f"Final Train R²:   {final_train_r2:.6f}")
                 print(f"Final Test R²:    {final_test_r2:.6f}")
