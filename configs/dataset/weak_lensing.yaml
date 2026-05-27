@@ -35,9 +35,12 @@ in_chans: 1
 # with model.pool_stride below.
 pool_stride: 8
 input_dim: 3916 # 178 * 22 after AvgPool2d(stride=8)
-output_dim: 2
 
-# Predicting (mean, sigma) for each cosmological parameter -> 4 outputs.
+# Predicting (mu, log_sigma) for each cosmological parameter -> 4 outputs.
+# (mu_Om, mu_S8, log_sigma_Om, log_sigma_S8). The labels themselves are
+# 2-dim (Om, S8) -- only the model head is widened. The score_inference
+# loss in src/training/metrics.py splits this 4-vector internally.
+output_dim: 4
 num_targets: 4
 
 # Width / depth knobs consumed by configs/model/efficientkan.yaml.
