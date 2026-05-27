@@ -10,6 +10,10 @@ from omegaconf import OmegaConf
 
 from src import get_device
 from src.datasets.gaussian_blob import GaussianBlobDataset
+from src.training.metrics import (
+    eval_metric_sums,
+    score_inference_loss,
+)
 
 
 class Trainer:
@@ -21,9 +25,15 @@ class Trainer:
         if "cuda" in str(self.device):
             torch.backends.cudnn.benchmark = True
 
-    def _create_loss_fn(self, task_type):
+    def _create_loss_fn(self, task_type, loss_name: str | None = None):
         if task_type == "classification":
             return torch.nn.CrossEntropyLoss()
+        if loss_name == "score_inference":
+            # FAIR-Universe weak-lensing: minimise the negative of the
+            # leaderboard score (= KL divergence between true and
+            # predicted Gaussian posteriors, with a lambda=1e3 penalty
+            # on the point estimate).
+            return score_inference_loss
         return lambda pred, target: torch.mean((pred - target) ** 2)
 
     @staticmethod
@@ -52,8 +62,11 @@ class Trainer:
         # optimizer factory: call with model.parameters() to build the torch optimizer
         optimizer_factory = instantiate(cfg.optimizer)
 
-        # create loss function
-        loss_fn = self._create_loss_fn(task_type)
+        # create loss function — datasets can opt into a custom loss by
+        # setting ``loss:`` in their YAML (e.g. weak_lensing -> score_inference).
+        loss_name = cfg.dataset.get("loss", None)
+        loss_fn = self._create_loss_fn(task_type, loss_name=loss_name)
+        is_score_inference = loss_name == "score_inference"
 
         # setup MLflow
         mlflow.set_tracking_uri(cfg.get("mlflow_tracking_uri", "mlruns"))
@@ -91,9 +104,22 @@ class Trainer:
                     dataset_obj, dataset, every=10
                 )
 
+            if is_score_inference:
+                fit_kwargs["extra_eval_metrics_fn"] = eval_metric_sums
+
             results = model.fit(**fit_kwargs)
 
             train_time = time.time() - t_start
+
+            # R² needs the label variance. Datasets may expose labels
+            # as tensors (legacy), numpy arrays (weak_lensing), or omit
+            # them entirely (test-only set).
+            def _label_var(obj):
+                if obj is None:
+                    return float("nan")
+                if not isinstance(obj, torch.Tensor):
+                    obj = torch.as_tensor(obj)
+                return float(torch.var(obj, unbiased=False))
 
             # log metrics per step
             if task_type == "classification":
@@ -119,6 +145,54 @@ class Trainer:
                 mlflow.log_metric("final_test_loss", float(results["test_loss"][-1]))
                 mlflow.log_metric("final_train_acc", float(results["train_acc"][-1]))
                 mlflow.log_metric("final_test_acc", float(results["test_acc"][-1]))
+            elif is_score_inference:
+                # ``train_loss`` / ``test_loss`` here are the negative
+                # leaderboard score (= the thing we're minimising).
+                # We log the signed score plus the diagnostic columns
+                # from the FAIR-Universe leaderboard: MSE, R², Coverage.
+                n_steps = len(results["train_loss"])
+                test_var = _label_var(
+                    dataset.get("val_label", dataset.get("test_label"))
+                )
+                for step_i in range(n_steps):
+                    tl = float(results["train_loss"][step_i])
+                    vl = float(results["test_loss"][step_i])
+                    test_mse_mu = float(results["mse_mu_sum"][step_i])
+                    metrics = {
+                        "train_score_loss": tl,
+                        "test_score_loss": vl,
+                        "train_score": -tl,
+                        "test_score": -vl,
+                        "test_mse_mu": test_mse_mu,
+                        "test_rmse_mu": test_mse_mu**0.5,
+                        "coverage_Om": float(results["cov_Om_sum"][step_i]),
+                        "coverage_S8": float(results["cov_S8_sum"][step_i]),
+                        "coverage_mean": float(results["cov_mean_sum"][step_i]),
+                    }
+                    if test_var and test_var > 0:
+                        metrics["test_r2_mu"] = 1.0 - test_mse_mu / test_var
+                    mlflow.log_metrics(metrics, step=step_i)
+
+                # Final summary metrics (last epoch).
+                final = {k: v[-1] for k, v in results.items() if isinstance(v, list) and v}
+                final_test_mse_mu = float(final["mse_mu_sum"])
+                mlflow.log_metric("final_train_score", -float(final["train_loss"]))
+                mlflow.log_metric("final_test_score", -float(final["test_loss"]))
+                mlflow.log_metric("final_test_mse_mu", final_test_mse_mu)
+                mlflow.log_metric("final_test_rmse_mu", final_test_mse_mu**0.5)
+                mlflow.log_metric("final_coverage_Om", float(final["cov_Om_sum"]))
+                mlflow.log_metric("final_coverage_S8", float(final["cov_S8_sum"]))
+                mlflow.log_metric("final_coverage_mean", float(final["cov_mean_sum"]))
+                if test_var and test_var > 0:
+                    mlflow.log_metric(
+                        "final_test_r2_mu", 1.0 - final_test_mse_mu / test_var
+                    )
+
+                print(f"\nFinal Test Score:    {-float(final['test_loss']):.4f}")
+                print(f"Final Test MSE (mu): {final_test_mse_mu:.6f}")
+                print(f"Final Coverage Om:   {float(final['cov_Om_sum']):.4f}")
+                print(f"Final Coverage S8:   {float(final['cov_S8_sum']):.4f}")
+                print(f"Final Coverage mean: {float(final['cov_mean_sum']):.4f}  (target ~0.68)")
             else:
                 for step_i, (tl, vl) in enumerate(
                     zip(results["train_loss"], results["test_loss"])
@@ -142,18 +216,8 @@ class Trainer:
                 mlflow.log_metric("final_train_rmse", final_train_rmse)
                 mlflow.log_metric("final_test_rmse", final_test_rmse)
 
-                # R² needs the label variance. Datasets may expose labels as
-                # tensors (legacy), numpy arrays (weak_lensing), or omit the
-                # test labels entirely (test set without ground truth).
-                # "val_label" takes precedence over "test_label" when both
-                # are present.
-                def _label_var(obj):
-                    if obj is None:
-                        return float("nan")
-                    if not isinstance(obj, torch.Tensor):
-                        obj = torch.as_tensor(obj)
-                    return float(torch.var(obj, unbiased=False))
-
+                # "val_label" takes precedence over "test_label" when
+                # both are present.
                 train_var = _label_var(dataset.get("train_label"))
                 test_label = dataset.get("val_label", dataset.get("test_label"))
                 test_var = _label_var(test_label)

@@ -35,6 +35,7 @@ class BaseKANModel(ABC):
         lamb,
         task_type="regression",
         epoch_callback=None,
+        extra_eval_metrics_fn=None,
         **kwargs,
     ):
         # Datasets return CPU tensors; the DataLoader moves each batch to
@@ -80,6 +81,9 @@ class BaseKANModel(ABC):
         if task_type == "classification":
             results["train_acc"] = []
             results["test_acc"] = []
+        # Extra eval metrics get one list per key, populated on the val
+        # set after each epoch.  Keys are discovered from the first batch.
+        extra_metric_keys: list[str] = []
 
         device = self.device
         for epoch in tqdm(range(epochs), desc="Training"):
@@ -133,6 +137,7 @@ class BaseKANModel(ABC):
             val_loss_sum = torch.zeros((), device=device)
             val_correct_sum = torch.zeros((), device=device)
             val_total = 0
+            extra_sums: dict[str, torch.Tensor] = {}
             with torch.no_grad():
                 for x, y in val_loader:
                     x = x.to(device, non_blocking=True)
@@ -142,8 +147,18 @@ class BaseKANModel(ABC):
                     val_loss_sum = val_loss_sum + loss_fn(pred, y) * bs_x
                     if task_type == "classification":
                         val_correct_sum = val_correct_sum + (pred.argmax(dim=1) == y).sum()
+                    if extra_eval_metrics_fn is not None:
+                        for k, v in extra_eval_metrics_fn(pred, y).items():
+                            extra_sums[k] = extra_sums.get(k, torch.zeros((), device=device)) + v
                     val_total += bs_x
             val_mse = (val_loss_sum / val_total).item()
+
+            if extra_eval_metrics_fn is not None:
+                for k, total in extra_sums.items():
+                    if k not in extra_metric_keys:
+                        extra_metric_keys.append(k)
+                        results[k] = []
+                    results[k].append((total / val_total).item())
 
             results["train_loss"].append(train_mse)
             results["test_loss"].append(val_mse)

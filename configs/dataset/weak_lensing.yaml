@@ -2,7 +2,6 @@ _target_: src.datasets.weak_lensing.WeakLensingDataset
 
 # Path to the .npy files released by the FAIR-Universe challenge.
 data_dir: /cluster/projects/ska/weak-lensing/data/
-use_public_dataset: true
 
 # Labels: keep (Omega_m, S_8) — the 2 cosmological parameters.
 n_targets: 2
@@ -19,6 +18,13 @@ standardize: true
 
 task_type: regression
 
+# FAIR-Universe weak-lensing challenge: train against the negative of
+# the leaderboard "score_inference" (KL divergence between true and
+# predicted Gaussian posteriors, with a lambda=1e3 penalty on the point
+# estimate). The trainer also logs MSE on mu and the 68% coverages
+# (per-parameter and mean) defined in the competition overview.
+loss: score_inference
+
 # image metadata (used by vision models e.g. CNN / KAT)
 img_height: 1424
 img_width: 176
@@ -28,7 +34,7 @@ in_chans: 1
 # ceil(1424/8) * ceil(176/8) = 178 * 22 = 3916 pixels. Keep these consistent
 # with model.pool_stride below.
 pool_stride: 8
-input_dim: 3916          # 178 * 22 after AvgPool2d(stride=8)
+input_dim: 3916 # 178 * 22 after AvgPool2d(stride=8)
 output_dim: 2
 
 # Predicting (mean, sigma) for each cosmological parameter -> 4 outputs.
@@ -40,4 +46,3 @@ n_hidden_min: 1
 n_hidden_max: 3
 hidden_width_min: 128
 hidden_width_max: 512
-
