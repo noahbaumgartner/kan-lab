@@ -147,9 +147,11 @@ class Trainer:
                 mlflow.log_metric("final_test_acc", float(results["test_acc"][-1]))
             elif is_score_inference:
                 # ``train_loss`` / ``test_loss`` here are the negative
-                # leaderboard score (= the thing we're minimising).
-                # We log the signed score plus the diagnostic columns
-                # from the FAIR-Universe leaderboard: MSE, R², Coverage.
+                # leaderboard score (the thing we minimise). We log the
+                # signed score plus the FAIR-Universe leaderboard
+                # diagnostic columns: MSE, R², Coverage. MSE/R² here are
+                # computed on the point estimates mu only (the prediction
+                # is 4-dim (mu, log_sigma); the label is 2-dim).
                 n_steps = len(results["train_loss"])
                 test_var = _label_var(
                     dataset.get("val_label", dataset.get("test_label"))
@@ -157,42 +159,46 @@ class Trainer:
                 for step_i in range(n_steps):
                     tl = float(results["train_loss"][step_i])
                     vl = float(results["test_loss"][step_i])
-                    test_mse_mu = float(results["mse_mu_sum"][step_i])
+                    test_mse = float(results["mse"][step_i])
                     metrics = {
                         "train_score_loss": tl,
                         "test_score_loss": vl,
                         "train_score": -tl,
                         "test_score": -vl,
-                        "test_mse_mu": test_mse_mu,
-                        "test_rmse_mu": test_mse_mu**0.5,
-                        "coverage_Om": float(results["cov_Om_sum"][step_i]),
-                        "coverage_S8": float(results["cov_S8_sum"][step_i]),
-                        "coverage_mean": float(results["cov_mean_sum"][step_i]),
+                        "test_mse": test_mse,
+                        "test_rmse": test_mse**0.5,
+                        "test_coverage_Om": float(results["coverage_Om"][step_i]),
+                        "test_coverage_S8": float(results["coverage_S8"][step_i]),
+                        "test_coverage_mean": float(results["coverage_mean"][step_i]),
                     }
                     if test_var and test_var > 0:
-                        metrics["test_r2_mu"] = 1.0 - test_mse_mu / test_var
+                        metrics["test_r2"] = 1.0 - test_mse / test_var
                     mlflow.log_metrics(metrics, step=step_i)
 
                 # Final summary metrics (last epoch).
-                final = {k: v[-1] for k, v in results.items() if isinstance(v, list) and v}
-                final_test_mse_mu = float(final["mse_mu_sum"])
+                final = {
+                    k: v[-1]
+                    for k, v in results.items()
+                    if isinstance(v, list) and v
+                }
+                final_test_mse = float(final["mse"])
                 mlflow.log_metric("final_train_score", -float(final["train_loss"]))
                 mlflow.log_metric("final_test_score", -float(final["test_loss"]))
-                mlflow.log_metric("final_test_mse_mu", final_test_mse_mu)
-                mlflow.log_metric("final_test_rmse_mu", final_test_mse_mu**0.5)
-                mlflow.log_metric("final_coverage_Om", float(final["cov_Om_sum"]))
-                mlflow.log_metric("final_coverage_S8", float(final["cov_S8_sum"]))
-                mlflow.log_metric("final_coverage_mean", float(final["cov_mean_sum"]))
+                mlflow.log_metric("final_test_mse", final_test_mse)
+                mlflow.log_metric("final_test_rmse", final_test_mse**0.5)
+                mlflow.log_metric("final_test_coverage_Om", float(final["coverage_Om"]))
+                mlflow.log_metric("final_test_coverage_S8", float(final["coverage_S8"]))
+                mlflow.log_metric("final_test_coverage_mean", float(final["coverage_mean"]))
                 if test_var and test_var > 0:
                     mlflow.log_metric(
-                        "final_test_r2_mu", 1.0 - final_test_mse_mu / test_var
+                        "final_test_r2", 1.0 - final_test_mse / test_var
                     )
 
-                print(f"\nFinal Test Score:    {-float(final['test_loss']):.4f}")
-                print(f"Final Test MSE (mu): {final_test_mse_mu:.6f}")
-                print(f"Final Coverage Om:   {float(final['cov_Om_sum']):.4f}")
-                print(f"Final Coverage S8:   {float(final['cov_S8_sum']):.4f}")
-                print(f"Final Coverage mean: {float(final['cov_mean_sum']):.4f}  (target ~0.68)")
+                print(f"\nFinal Test Score:        {-float(final['test_loss']):.4f}")
+                print(f"Final Test MSE:          {final_test_mse:.6f}")
+                print(f"Final Coverage Om:       {float(final['coverage_Om']):.4f}")
+                print(f"Final Coverage S8:       {float(final['coverage_S8']):.4f}")
+                print(f"Final Coverage mean:     {float(final['coverage_mean']):.4f}  (target ~0.68)")
             else:
                 for step_i, (tl, vl) in enumerate(
                     zip(results["train_loss"], results["test_loss"])

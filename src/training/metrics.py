@@ -28,10 +28,23 @@ from __future__ import annotations
 import torch
 
 
+#: Hard bounds on log(sigma) to prevent the canonical "sigma collapse"
+#: failure mode of Gaussian NLL: the network learns log_sigma -> -inf
+#: because the +2*log_sigma term in the score rewards it, and coverage
+#: drops to ~0. We clamp wide enough that the loss can still adapt
+#: per-sample (sigma in [~0.002, ~7]) but can't run to zero.
+LOG_SIGMA_MIN = -6.0
+LOG_SIGMA_MAX = 2.0
+
+
 def _split(pred: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Return ``(mu, log_sigma, sigma)`` from a (B, 4) prediction."""
+    """Return ``(mu, log_sigma, sigma)`` from a (B, 4) prediction.
+
+    ``log_sigma`` is clamped to a finite range so training cannot drive
+    it to -infinity (the sigma-collapse failure mode of Gaussian NLL).
+    """
     mu = pred[:, :2]
-    log_sigma = pred[:, 2:]
+    log_sigma = pred[:, 2:].clamp(min=LOG_SIGMA_MIN, max=LOG_SIGMA_MAX)
     sigma = torch.exp(log_sigma)
     return mu, log_sigma, sigma
 
@@ -95,8 +108,11 @@ def coverage_68(pred: torch.Tensor, target: torch.Tensor) -> dict:
 
 @torch.no_grad()
 def eval_metric_sums(pred: torch.Tensor, target: torch.Tensor, lam: float = 1e3) -> dict:
-    """Per-batch sums for ``score_inference``, MSE on mu, and the three
-    coverage variants.  The trainer divides by the running sample count.
+    """Per-batch sums for the metrics we want to track on the val set.
+
+    Each value is a batch-sum; the trainer divides by the running sample
+    count to get per-sample averages.  Keys are the final MLflow metric
+    names (the trainer prefixes with ``train_``/``test_`` as appropriate).
     """
     mu, log_sigma, sigma = _split(pred)
     sq_err = (mu - target) ** 2
@@ -105,10 +121,9 @@ def eval_metric_sums(pred: torch.Tensor, target: torch.Tensor, lam: float = 1e3)
     inside = (target - mu).abs() <= sigma
 
     return {
-        # negate at log time to get the leaderboard score
-        "score_loss_sum": score_loss_per_sample.sum(),
-        "mse_mu_sum": sq_err.sum() / sq_err.shape[1],  # mean over the 2 params, sum over batch
-        "cov_Om_sum": inside[:, 0].float().sum(),
-        "cov_S8_sum": inside[:, 1].float().sum(),
-        "cov_mean_sum": inside.float().mean(dim=1).sum(),
+        "score_loss": score_loss_per_sample.sum(),               # leaderboard score = -mean
+        "mse": sq_err.sum() / sq_err.shape[1],                   # MSE on mu, averaged over the 2 params
+        "coverage_Om": inside[:, 0].float().sum(),
+        "coverage_S8": inside[:, 1].float().sum(),
+        "coverage_mean": inside.float().mean(dim=1).sum(),
     }
