@@ -30,9 +30,10 @@ class Trainer:
             return torch.nn.CrossEntropyLoss()
         if loss_name == "score_inference":
             # FAIR-Universe weak-lensing: minimise the negative of the
-            # leaderboard score (= KL divergence between true and
-            # predicted Gaussian posteriors, with a lambda=1e3 penalty
-            # on the point estimate).
+            # PDF leaderboard score with λ=1e3.  Labels must be
+            # standardised by the dataset so σ lives at a natural O(1)
+            # scale.  Use gradient clipping + a small LR; the λ·MSE term
+            # dominates the gradient.
             return score_inference_loss
         return lambda pred, target: torch.mean((pred - target) ** 2)
 
@@ -105,7 +106,14 @@ class Trainer:
                 )
 
             if is_score_inference:
-                fit_kwargs["extra_eval_metrics_fn"] = eval_metric_sums
+                label_stats = dataset.get("label_stats")
+                if label_stats is not None:
+                    label_std_t = torch.as_tensor(label_stats[1], dtype=torch.float32)
+                    fit_kwargs["extra_eval_metrics_fn"] = (
+                        lambda p, t: eval_metric_sums(p, t, label_std=label_std_t)
+                    )
+                else:
+                    fit_kwargs["extra_eval_metrics_fn"] = eval_metric_sums
 
             results = model.fit(**fit_kwargs)
 
@@ -146,30 +154,31 @@ class Trainer:
                 mlflow.log_metric("final_train_acc", float(results["train_acc"][-1]))
                 mlflow.log_metric("final_test_acc", float(results["test_acc"][-1]))
             elif is_score_inference:
-                # ``train_loss`` / ``test_loss`` here are the negative
-                # leaderboard score (the thing we minimise). We log the
-                # signed score plus the FAIR-Universe leaderboard
-                # diagnostic columns: MSE, R², Coverage. MSE/R² here are
-                # computed on the point estimates mu only (the prediction
-                # is 4-dim (mu, log_sigma); the label is 2-dim).
+                # ``train_loss`` / ``test_loss`` are the PDF score-loss
+                # (negative leaderboard score, λ=1e3) — i.e. the exact
+                # quantity submitted to Codabench.  Labels are
+                # standardised, so MSE/R²/score are reported in z-space;
+                # multiply MSE component-wise by std² to recover original
+                # units at submission time.
                 n_steps = len(results["train_loss"])
                 test_var = _label_var(
                     dataset.get("val_label", dataset.get("test_label"))
                 )
+                # ``test_score`` is the Codabench leaderboard score — computed
+                # in original Ω_m / S_8 units when labels were standardised,
+                # otherwise identical to ``-score_loss``.
+                score_key = "score_loss_original" if "score_loss_original" in results else "score_loss"
                 for step_i in range(n_steps):
                     tl = float(results["train_loss"][step_i])
                     vl = float(results["test_loss"][step_i])
                     test_mse = float(results["mse"][step_i])
                     metrics = {
-                        "train_score_loss": tl,
-                        "test_score_loss": vl,
-                        "train_score": -tl,
-                        "test_score": -vl,
+                        "train_loss": tl,            # z-space PDF score-loss (training objective)
+                        "test_loss": vl,             # z-space PDF score-loss on val
+                        "test_score": -float(results[score_key][step_i]),  # Codabench
                         "test_mse": test_mse,
                         "test_rmse": test_mse**0.5,
-                        "test_coverage_Om": float(results["coverage_Om"][step_i]),
-                        "test_coverage_S8": float(results["coverage_S8"][step_i]),
-                        "test_coverage_mean": float(results["coverage_mean"][step_i]),
+                        "test_coverage": float(results["coverage"][step_i]),
                     }
                     if test_var and test_var > 0:
                         metrics["test_r2"] = 1.0 - test_mse / test_var
@@ -182,23 +191,21 @@ class Trainer:
                     if isinstance(v, list) and v
                 }
                 final_test_mse = float(final["mse"])
-                mlflow.log_metric("final_train_score", -float(final["train_loss"]))
-                mlflow.log_metric("final_test_score", -float(final["test_loss"]))
+                final_test_score = -float(final[score_key])
+                mlflow.log_metric("final_train_loss", float(final["train_loss"]))
+                mlflow.log_metric("final_test_loss", float(final["test_loss"]))
+                mlflow.log_metric("final_test_score", final_test_score)
                 mlflow.log_metric("final_test_mse", final_test_mse)
                 mlflow.log_metric("final_test_rmse", final_test_mse**0.5)
-                mlflow.log_metric("final_test_coverage_Om", float(final["coverage_Om"]))
-                mlflow.log_metric("final_test_coverage_S8", float(final["coverage_S8"]))
-                mlflow.log_metric("final_test_coverage_mean", float(final["coverage_mean"]))
+                mlflow.log_metric("final_test_coverage", float(final["coverage"]))
                 if test_var and test_var > 0:
                     mlflow.log_metric(
                         "final_test_r2", 1.0 - final_test_mse / test_var
                     )
 
-                print(f"\nFinal Test Score:        {-float(final['test_loss']):.4f}")
+                print(f"\nFinal Test Score:        {final_test_score:.4f}  (Codabench scale)")
                 print(f"Final Test MSE:          {final_test_mse:.6f}")
-                print(f"Final Coverage Om:       {float(final['coverage_Om']):.4f}")
-                print(f"Final Coverage S8:       {float(final['coverage_S8']):.4f}")
-                print(f"Final Coverage mean:     {float(final['coverage_mean']):.4f}  (target ~0.68)")
+                print(f"Final Coverage:          {float(final['coverage']):.4f}  (target ~0.68)")
             else:
                 for step_i, (tl, vl) in enumerate(
                     zip(results["train_loss"], results["test_loss"])

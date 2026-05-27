@@ -9,58 +9,30 @@ from torch.utils.data import Dataset
 
 
 def _noise_sigma(ng: float, pixel_size_arcmin: float) -> float:
-    """Per-pixel shape-noise sigma used by the challenge."""
     return 0.4 / (2.0 * ng * pixel_size_arcmin**2) ** 0.5
 
 
-def add_noise_inplace(
-    kappa_map: np.ndarray,
-    mask: np.ndarray,
-    ng: float = 30.0,
-    pixel_size_arcmin: float = 2.0,
-    rng: Optional[np.random.Generator] = None,
-    out: Optional[np.ndarray] = None,
-) -> np.ndarray:
-    if rng is None:
-        rng = np.random.default_rng()
-    sigma = _noise_sigma(ng, pixel_size_arcmin)
-
-    if out is None:
-        out = np.empty(kappa_map.shape, dtype=np.float32)
-
-    # noise ~ N(0, sigma * mask)
-    noise = rng.standard_normal(kappa_map.shape).astype(np.float32, copy=False)
-    noise *= sigma
-    noise *= mask.astype(np.float32, copy=False)
-
-    # out = kappa + noise   (upcast kappa from float16 lazily, one map at a time)
-    np.add(kappa_map, noise, out=out, casting="unsafe")
-    return out
-
-
-class _LazyNoisyMapDataset(Dataset):
+class _MapDataset(Dataset):
     def __init__(
         self,
         kappa_flat: np.ndarray,
         mask: np.ndarray,
         labels: Optional[np.ndarray],
-        ng: float,
-        pixel_size_arcmin: float,
+        input_stats: Optional[tuple[float, float]] = None,
+        add_noise: bool = False,
+        ng: float = 30.0,
+        pixel_size_arcmin: float = 2.0,
         noise_seed: Optional[int] = None,
-        standardize: Optional[tuple[float, float]] = None,
     ):
-        assert kappa_flat.ndim == 2, "expect compact (N, n_unmasked) form"
         self.kappa_flat = kappa_flat
         self.mask = mask.astype(bool, copy=False)
         self.labels = labels
-        self.ng = ng
-        self.pixel_size_arcmin = pixel_size_arcmin
+        self.input_stats = input_stats
+        self.add_noise = add_noise
         self.noise_seed = noise_seed
-        self.standardize = standardize
-
         self._h, self._w = mask.shape
-        # cache a float32 mask for the noise multiplication
         self._mask_f32 = self.mask.astype(np.float32)
+        self._noise_sigma = _noise_sigma(ng, pixel_size_arcmin) if add_noise else 0.0
 
     def __len__(self) -> int:
         return self.kappa_flat.shape[0]
@@ -68,78 +40,33 @@ class _LazyNoisyMapDataset(Dataset):
     def _rng(self, idx: int):
         if self.noise_seed is None:
             return np.random.default_rng()
-        # SeedSequence gives well-spaced independent streams per index.
         return np.random.default_rng(np.random.SeedSequence([self.noise_seed, idx]))
 
     def __getitem__(self, idx: int):
-        # 1. scatter the compact row back to a dense (H, W) float32 map
         dense = np.zeros((self._h, self._w), dtype=np.float32)
         dense[self.mask] = self.kappa_flat[idx].astype(np.float32, copy=False)
 
-        # 2. add noise in place (dense already float32, reused as out buffer)
-        rng = self._rng(idx)
-        sigma = _noise_sigma(self.ng, self.pixel_size_arcmin)
-        noise = rng.standard_normal(dense.shape).astype(np.float32, copy=False)
-        noise *= sigma
-        noise *= self._mask_f32
-        dense += noise
+        if self.add_noise:
+            noise = self._rng(idx).standard_normal(dense.shape).astype(np.float32)
+            noise *= self._noise_sigma
+            noise *= self._mask_f32
+            dense += noise
 
-        if self.standardize is not None:
-            mu, std = self.standardize
-            dense = (dense - mu) / std
+        if self.input_stats is not None:
+            m, s = self.input_stats
+            dense = (dense - m) / s
 
-        x = torch.from_numpy(dense).unsqueeze(0)  # (1, H, W)
-        if self.labels is None:
-            return x
-        y = torch.from_numpy(self.labels[idx])
-        return x, y
-
-
-class _DenseMapDataset(Dataset):
-    """Test-set wrapper: maps are already noisy, just scatter + standardize."""
-
-    def __init__(
-        self,
-        kappa_flat: np.ndarray,
-        mask: np.ndarray,
-        labels: Optional[np.ndarray] = None,
-        standardize: Optional[tuple[float, float]] = None,
-    ):
-        self.kappa_flat = kappa_flat
-        self.mask = mask.astype(bool, copy=False)
-        self.labels = labels
-        self.standardize = standardize
-        self._h, self._w = mask.shape
-
-    def __len__(self) -> int:
-        return self.kappa_flat.shape[0]
-
-    def __getitem__(self, idx: int):
-        dense = np.zeros((self._h, self._w), dtype=np.float32)
-        dense[self.mask] = self.kappa_flat[idx].astype(np.float32, copy=False)
-        if self.standardize is not None:
-            mu, std = self.standardize
-            dense = (dense - mu) / std
         x = torch.from_numpy(dense).unsqueeze(0)
         if self.labels is None:
             return x
-        y = torch.from_numpy(self.labels[idx])
-        return x, y
-
-
-# -----------------------------------------------------------------------------
-# Public dataset class (follows the project convention)
-# -----------------------------------------------------------------------------
+        return x, torch.from_numpy(self.labels[idx])
 
 
 class WeakLensingDataset:
-    # The samples are 2D maps, so input_dim isn't really meaningful for a CNN
-    # — it's reported here for compatibility with the rest of the project's
-    # dataset interface (flattened map size).
     img_height = 1424
     img_width = 176
     in_chans = 1
-    output_dim = 2  # (Omega_m, S_8)
+    output_dim = 2
 
     def __init__(
         self,
@@ -165,34 +92,22 @@ class WeakLensingDataset:
         self.kappa_file = "WIDE12H_bin2_2arcmin_kappa.npy"
         self.label_file = "label.npy"
         self.test_kappa_file = "WIDE12H_bin2_2arcmin_kappa_noisy_test.npy"
-        self.Ncosmo, self.Nsys = 101, 256
         self.mask_file = "WIDE12H_bin2_2arcmin_mask.npy"
-
-    # ----- internals -----
+        self.Ncosmo, self.Nsys = 101, 256
 
     def _load_compact(self, fname: str) -> np.ndarray:
-        # mmap so we do not pull the whole file into RAM before flattening
         return np.load(os.path.join(self.data_dir, fname), mmap_mode="r")
 
-    def _estimate_stats(
+    def _estimate_input_stats(
         self, kappa_flat: np.ndarray, mask: np.ndarray, n_sample: int = 256
     ) -> tuple[float, float]:
-        """Estimate input mean/std from a small noisy mini-sample.
-
-        We sample ``n_sample`` rows uniformly, scatter + add one noise draw
-        each, and aggregate.  Peak memory: ``n_sample * H * W * 4`` bytes
-        for the sample buffer (~64 MB at n_sample=256), still tiny next to
-        the full cube.
-        """
         n = kappa_flat.shape[0]
         rng = np.random.default_rng(0)
         idx = rng.choice(n, size=min(n_sample, n), replace=False)
         sigma = _noise_sigma(self.ng, self.pixel_size_arcmin)
         mask_f32 = mask.astype(np.float32)
 
-        sum_ = 0.0
-        sum_sq = 0.0
-        count = 0
+        sum_, sum_sq, count = 0.0, 0.0, 0
         for i in idx:
             dense = np.zeros(mask.shape, dtype=np.float32)
             dense[mask] = kappa_flat[i].astype(np.float32, copy=False)
@@ -207,71 +122,56 @@ class WeakLensingDataset:
         var = sum_sq / count - mean * mean
         return mean, float(np.sqrt(max(var, 1e-12)))
 
-    # ----- public API -----
-
     def create(self) -> dict:
-        mask = np.load(os.path.join(self.data_dir, self.mask_file))
-        mask = mask.astype(bool)
-
-        # Compact form straight from disk: (Ncosmo*Nsys, n_unmasked) float16.
-        # The released file is already stored in this compact shape.
-        kappa_compact = self._load_compact(self.kappa_file)
-        # Force into memory once as a contiguous float16 array — this is the
-        # smallest dense representation we can keep around.
-        kappa_compact = np.ascontiguousarray(kappa_compact, dtype=np.float16)
-        # Reshape to (Ncosmo, Nsys, n_unmasked) so we can split along Nsys.
+        mask = np.load(os.path.join(self.data_dir, self.mask_file)).astype(bool)
         n_unmasked = int(mask.sum())
-        kappa_compact = kappa_compact.reshape(self.Ncosmo, self.Nsys, n_unmasked)
 
-        labels = np.load(os.path.join(self.data_dir, self.label_file))
-        labels = labels.astype(np.float32)
+        kappa = np.ascontiguousarray(self._load_compact(self.kappa_file), dtype=np.float16)
+        kappa = kappa.reshape(self.Ncosmo, self.Nsys, n_unmasked)
+        labels = np.load(os.path.join(self.data_dir, self.label_file)).astype(np.float32)
 
-        # Split along the nuisance-parameter axis (challenge recommendation).
         rng = np.random.default_rng(self.split_seed)
         perm = rng.permutation(self.Nsys)
         n_val = int(round(self.Nsys * self.val_fraction))
         val_idx = np.sort(perm[:n_val])
         train_idx = np.sort(perm[n_val:])
 
-        train_kappa = kappa_compact[:, train_idx].reshape(-1, n_unmasked)
-        val_kappa = kappa_compact[:, val_idx].reshape(-1, n_unmasked)
-        train_y = labels[:, train_idx].reshape(-1, labels.shape[-1])[
-            :, : self.n_targets
-        ]
+        train_kappa = kappa[:, train_idx].reshape(-1, n_unmasked)
+        val_kappa = kappa[:, val_idx].reshape(-1, n_unmasked)
+        train_y = labels[:, train_idx].reshape(-1, labels.shape[-1])[:, : self.n_targets]
         val_y = labels[:, val_idx].reshape(-1, labels.shape[-1])[:, : self.n_targets]
 
-        # Standardization stats from a noisy mini-sample of the training set.
-        stats = self._estimate_stats(train_kappa, mask) if self.standardize else None
+        input_stats = self._estimate_input_stats(train_kappa, mask) if self.standardize else None
 
-        train_ds = _LazyNoisyMapDataset(
-            kappa_flat=train_kappa,
-            mask=mask,
-            labels=train_y,
-            ng=self.ng,
-            pixel_size_arcmin=self.pixel_size_arcmin,
-            noise_seed=None,  # fresh noise each epoch -> data augmentation
-            standardize=stats,
+        if self.standardize:
+            label_mean = train_y.mean(axis=0).astype(np.float32)
+            label_std = train_y.std(axis=0).astype(np.float32)
+            label_std = np.where(label_std > 1e-8, label_std, 1.0).astype(np.float32)
+            train_y = (train_y - label_mean) / label_std
+            val_y = (val_y - label_mean) / label_std
+            label_stats = (label_mean, label_std)
+        else:
+            label_stats = None
+
+        train_ds = _MapDataset(
+            train_kappa, mask, train_y,
+            input_stats=input_stats, add_noise=True,
+            ng=self.ng, pixel_size_arcmin=self.pixel_size_arcmin,
+            noise_seed=None,
         )
-        val_ds = _LazyNoisyMapDataset(
-            kappa_flat=val_kappa,
-            mask=mask,
-            labels=val_y,
-            ng=self.ng,
-            pixel_size_arcmin=self.pixel_size_arcmin,
-            noise_seed=31415,  # reproducible per-sample noise for validation
-            standardize=stats,
+        val_ds = _MapDataset(
+            val_kappa, mask, val_y,
+            input_stats=input_stats, add_noise=True,
+            ng=self.ng, pixel_size_arcmin=self.pixel_size_arcmin,
+            noise_seed=31415,
         )
 
-        # Test set is already noisy on disk — just scatter through the mask.
-        test_compact = self._load_compact(self.test_kappa_file)
-        test_compact = np.ascontiguousarray(test_compact, dtype=np.float16)
+        test_compact = np.ascontiguousarray(self._load_compact(self.test_kappa_file), dtype=np.float16)
         if test_compact.ndim == 2:
             test_compact = test_compact.reshape(-1, n_unmasked)
-        test_ds = _DenseMapDataset(
-            kappa_flat=test_compact,
-            mask=mask,
-            labels=None,
-            standardize=stats,
+        test_ds = _MapDataset(
+            test_compact, mask, None,
+            input_stats=input_stats, add_noise=False,
         )
 
         return {
@@ -282,5 +182,6 @@ class WeakLensingDataset:
             "test_input": test_ds,
             "test_label": None,
             "mask": mask,
-            "input_stats": stats,
+            "input_stats": input_stats,
+            "label_stats": label_stats,
         }
