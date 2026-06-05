@@ -36,6 +36,7 @@ class BaseKANModel(ABC):
         task_type="regression",
         epoch_callback=None,
         extra_eval_metrics_fn=None,
+        grad_clip=None,
         **kwargs,
     ):
         # Datasets return CPU tensors; the DataLoader moves each batch to
@@ -76,6 +77,10 @@ class BaseKANModel(ABC):
 
         opt = optimizer_factory(self.get_model().parameters())
         is_lbfgs = isinstance(opt, torch.optim.LBFGS)
+        # Gradient clipping (max L2 norm). Off by default; datasets with a
+        # large-scale loss (e.g. weak_lensing's λ=1e3 score_inference) set
+        # ``training.grad_clip`` to keep updates from diverging to NaN.
+        clip = float(grad_clip) if grad_clip else None
 
         results = {"train_loss": [], "test_loss": [], "reg": []}
         if task_type == "classification":
@@ -108,6 +113,10 @@ class BaseKANModel(ABC):
                         reg = self.regularization_loss()
                         loss = data_loss + lamb * reg if reg > 0 else data_loss
                         loss.backward()
+                        if clip is not None:
+                            torch.nn.utils.clip_grad_norm_(
+                                self.get_model().parameters(), clip
+                            )
                         return loss
 
                     opt.step(closure)
@@ -120,6 +129,10 @@ class BaseKANModel(ABC):
                     reg = self.regularization_loss()
                     loss = data_loss + lamb * reg if reg > 0 else data_loss
                     loss.backward()
+                    if clip is not None:
+                        torch.nn.utils.clip_grad_norm_(
+                            self.get_model().parameters(), clip
+                        )
                     opt.step()
                     pred_detached = pred.detach()
                     data_loss = data_loss.detach()

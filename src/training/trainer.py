@@ -98,6 +98,7 @@ class Trainer:
                 task_type=task_type,
                 num_workers=cfg.training.get("num_workers", 0),
                 prefetch_factor=cfg.training.get("prefetch_factor", 4),
+                grad_clip=cfg.training.get("grad_clip", None),
             )
 
             if isinstance(dataset_obj, GaussianBlobDataset):
