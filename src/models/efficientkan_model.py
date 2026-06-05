@@ -1,46 +1,39 @@
-import torch.nn as nn
-
 from .base import BaseKANModel
 from src.modules.efficientkan import KAN
-
-
-class _FlattenWrapper(nn.Module):
-    """Flatten everything past the batch dim so a KAN MLP can consume images.
-
-    Optionally average-pools first so a 1424x176 weak-lensing map doesn't
-    explode the input-layer width.
-    """
-
-    def __init__(self, kan: nn.Module, pool_stride: int = 1):
-        super().__init__()
-        self.pool = (
-            nn.AvgPool2d(kernel_size=pool_stride, stride=pool_stride)
-            if pool_stride > 1
-            else nn.Identity()
-        )
-        self.flatten = nn.Flatten()
-        self.kan = kan
-
-    def forward(self, x):
-        if x.dim() == 4:  # (B, C, H, W) -> pool then flatten
-            x = self.pool(x)
-        x = self.flatten(x)
-        return self.kan(x)
-
-    # KAN delegates ----------------------------------------------------------
-    def regularization_loss(self, *args, **kwargs):
-        return self.kan.regularization_loss(*args, **kwargs)
+from src.modules.reduction import ReductionWrapper
 
 
 class EfficientKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, grid_size=5, k=3, pool_stride=1, **kwargs):
+    def __init__(
+        self,
+        layers_hidden,
+        grid_size=5,
+        k=3,
+        reduction="none",
+        pool_stride=1,
+        scattering_j=3,
+        scattering_l=8,
+        scattering_order=2,
+        img_height=0,
+        img_width=0,
+        in_chans=1,
+        **kwargs,
+    ):
         self.layers_hidden = layers_hidden
         self.grid_size = grid_size
         self.k = k
-        # For 2D image inputs (e.g. weak_lensing) you'll usually want a
-        # large pool_stride so the KAN's first layer width matches
-        # layers_hidden[0]. Defaults to 1 (no-op) for tabular/1D inputs.
-        self.pool_stride = pool_stride
+        # Image -> vector reduction applied to 2D inputs (e.g. weak_lensing)
+        # before flattening. Defaults to a no-op passthrough for tabular/1D.
+        self.reduction = dict(
+            method=reduction,
+            in_chans=in_chans,
+            img_height=img_height,
+            img_width=img_width,
+            pool_stride=pool_stride,
+            scattering_j=scattering_j,
+            scattering_l=scattering_l,
+            scattering_order=scattering_order,
+        )
 
     def build(self, device="cpu"):
         kan = KAN(
@@ -49,7 +42,7 @@ class EfficientKANModel(BaseKANModel):
             spline_order=self.k,
             grid_range=[-3, 3],
         )
-        self.model = _FlattenWrapper(kan, pool_stride=self.pool_stride).to(device)
+        self.model = ReductionWrapper(kan, **self.reduction).to(device)
         self.device = device
 
     def regularization_loss(self):

@@ -16,6 +16,9 @@ import hydra
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 
+from src.modules.reduction import reduced_dim
+
+
 def _make_width(in_d, out_d, n_h, *hidden_widths):
     n_h = int(n_h)
     if n_h > len(hidden_widths):
@@ -26,6 +29,7 @@ def _make_width(in_d, out_d, n_h, *hidden_widths):
 
 
 OmegaConf.register_new_resolver("make_width", _make_width, replace=True)
+OmegaConf.register_new_resolver("reduced_dim", reduced_dim, replace=True)
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")

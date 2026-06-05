@@ -2,41 +2,38 @@ import torch.nn as nn
 
 from .base import BaseKANModel
 from src.modules.fastkan import FastKAN, FastKANLayer
-
-
-class _FlattenWrapper(nn.Module):
-    """Avg-pool (optional) + flatten so an MLP-style KAN can consume images.
-
-    Mirrors the wrapper in ``EfficientKANModel``: for 2D image inputs
-    (e.g. weak-lensing maps) we avg-pool first so the KAN's first layer
-    width matches ``layers_hidden[0]``.  For tabular / already-flat inputs
-    the pool is a no-op and ``forward`` just passes through.
-    """
-
-    def __init__(self, kan: nn.Module, pool_stride: int = 1):
-        super().__init__()
-        self.pool = (
-            nn.AvgPool2d(kernel_size=pool_stride, stride=pool_stride)
-            if pool_stride > 1
-            else nn.Identity()
-        )
-        self.flatten = nn.Flatten()
-        self.kan = kan
-
-    def forward(self, x):
-        if x.dim() == 4:  # (B, C, H, W) -> pool then flatten
-            x = self.pool(x)
-            x = self.flatten(x)
-        return self.kan(x)
+from src.modules.reduction import ReductionWrapper
 
 
 class FastKANModel(BaseKANModel):
-    def __init__(self, layers_hidden, num_grids=8, pool_stride=1, **kwargs):
+    def __init__(
+        self,
+        layers_hidden,
+        num_grids=8,
+        reduction="none",
+        pool_stride=1,
+        scattering_j=3,
+        scattering_l=8,
+        scattering_order=2,
+        img_height=0,
+        img_width=0,
+        in_chans=1,
+        **kwargs,
+    ):
         self.layers_hidden = layers_hidden
         self.grid_min = -2.0
         self.grid_max = 2.0
         self.num_grids = num_grids
-        self.pool_stride = pool_stride
+        self.reduction = dict(
+            method=reduction,
+            in_chans=in_chans,
+            img_height=img_height,
+            img_width=img_width,
+            pool_stride=pool_stride,
+            scattering_j=scattering_j,
+            scattering_l=scattering_l,
+            scattering_order=scattering_order,
+        )
 
     def build(self, device="cpu"):
         layers_hidden = list(self.layers_hidden)
@@ -63,5 +60,5 @@ class FastKANModel(BaseKANModel):
                 grid_max=self.grid_max,
                 num_grids=self.num_grids,
             )
-        self.model = _FlattenWrapper(kan, pool_stride=self.pool_stride).to(device)
+        self.model = ReductionWrapper(kan, **self.reduction).to(device)
         self.device = device
